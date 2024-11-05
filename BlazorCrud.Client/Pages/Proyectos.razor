@@ -1,0 +1,121 @@
+﻿@page "/proyectos"
+
+@using BlazorCrud.Shared;
+@using CurrieTechnologies.Razor.SweetAlert2;
+@using BlazorCrud.Client.Services;
+
+@inject SweetAlertService Swal;
+@inject IProyectoService proyectoService;
+
+<h3>Proyectos</h3>
+
+<a class="btn btn-success btn-sm mb-3" href="proyecto">Nuevo Proyecto</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Fecha Inicio</th>
+            <th>Fecha Fin</th>
+            <th>Prioridad</th>
+            <th>Estado</th>
+            <th>Presupuesto</th>
+            <th>Recursos Asignados</th>
+            <th>Fecha Creación</th>
+            <th>Fecha Finalización</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @if(listaProyecto == null)
+        {
+            <tr>
+                <td colspan="11" align="center">
+                    <img style="width:50px" src="https://media.tenor.com/On7kvXhzmI4AAAAj/loading-gif.gif" />
+                </td>
+            </tr>
+        }
+        else
+        {
+            @foreach(var item in listaProyecto)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Nombre</td>
+                    <td>@item.Descripcion</td>
+                    <td>@item.FechaInicio.ToString("dd/MM/yyyy")</td>
+                    <td>@item.FechaFin?.ToString("dd/MM/yyyy")</td>
+                    <td>@ObtenerDescripcionPrioridad(item.Prioridad)</td>
+                    <td>@ObtenerDescripcionEstado(item.Estado)</td>
+                    <td>@item.PresupuestoEstimado</td>
+                    <td>@item.RecursosAsignados</td>
+                    <td>@item.FechaCreacion</td>
+                    <td>@item.FechaActualizacion</td>
+                    <td>
+                        <a class="btn btn-primary btn-sm" href="proyecto/@item.Id">
+                            Editar
+                        </a>
+                        <button type="button" class="btn btn-danger btn-sm ms-2" @onclick="(() => Eliminar(item.Id))">
+                            Eliminar
+                        </button>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+@code {
+    List<ProyectoDTO>? listaProyecto = null;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        listaProyecto = await proyectoService.Lista();
+    }
+
+    private async Task Eliminar(int id)
+    {
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+        {
+            Title = "Eliminar Proyecto",
+            Text = "Deseas eliminar el proyecto?",
+            Icon = SweetAlertIcon.Question,
+            ShowCancelButton = true
+        });
+
+        if (resultado.IsConfirmed)
+        {
+            var eliminado = await proyectoService.Eliminar(id);
+
+            if (eliminado)
+                listaProyecto = listaProyecto!.FindAll(e => e.Id != id);
+        }
+    }
+
+    private string ObtenerDescripcionPrioridad(string? prioridad)
+    {
+        return prioridad switch
+        {
+            "A" => "Alta",
+            "M" => "Media",
+            "B" => "Baja",
+            _ => "Desconocida"
+        };
+    }
+
+    private string ObtenerDescripcionEstado(string? estado)
+    {
+        return estado switch
+        {
+            "E" => "En Progreso",
+            "P" => "Planeado",
+            "C" => "Completado",
+            "X" => "Cancelado",
+            _ => "Desconocido"
+        };
+    }
+}
