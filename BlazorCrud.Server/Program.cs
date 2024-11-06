@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -35,6 +36,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("nuevaPolitica");
+
 
 app.UseAuthorization();
 

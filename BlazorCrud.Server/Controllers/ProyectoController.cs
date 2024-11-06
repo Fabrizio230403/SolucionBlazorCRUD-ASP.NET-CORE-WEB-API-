@@ -29,26 +29,35 @@ namespace BlazorCrud.Server.Controllers
 
             try
             {
-                foreach(var item in await _dbContext.Proyectos.ToListAsync())
+                foreach(var item in await _dbContext.Proyectos.Include(u => u.Gerente).ToListAsync())
                 {
                     listaProyectoDTO.Add(new ProyectoDTO
                     {
-                        Id = item.Id,
+                        ProyectoId = item.ProyectoId,
                         Nombre = item.Nombre,
                         Descripcion = item.Descripcion,
                         FechaInicio = item.FechaInicio,
                         FechaFin = item.FechaFin,
                         Prioridad = item.Prioridad,
                         Estado = item.Estado,
-                        PresupuestoEstimado = item.PresupuestoEstimado,
-                        RecursosAsignados = item.RecursosAsignados,
-                        FechaCreacion = item.FechaCreacion,
-                        FechaActualizacion = item.FechaActualizacion,
+                        GerenteId = item.GerenteId,
+                        PorcentajeCompleto = item.PorcentajeCompleto,
+                        Gerente = new UsuarioDTO
+                        {
+                            UsuarioId = item.Gerente!.UsuarioId,
+                            Nombre = item.Gerente.Nombre,
+                            Email = item.Gerente.Email,
+                            PasswordHash = item.Gerente.PasswordHash,
+                            RolId = item.Gerente.RolId,
+                            FechaCreacion = item.Gerente.FechaCreacion,
+                        }
+                         
                     });
                 }
 
                 responseApi.EsCorrecto = true;
                 responseApi.Valor = listaProyectoDTO;
+
             } catch (Exception ex)
             {
                 responseApi.EsCorrecto = false;
@@ -57,6 +66,7 @@ namespace BlazorCrud.Server.Controllers
 
             return Ok(responseApi);
         }
+
 
         [HttpGet]
         [Route("Buscar/{id}")]
@@ -67,23 +77,20 @@ namespace BlazorCrud.Server.Controllers
 
             try
             {
-                var dbProyecto = await _dbContext.Proyectos.FirstOrDefaultAsync(x => x.Id == id);
+                var dbProyecto = await _dbContext.Proyectos.FirstOrDefaultAsync(x => x.ProyectoId == id);
 
                 if(dbProyecto != null)
                 {
-                    ProyectoDTO.Id = dbProyecto.Id;
+                    ProyectoDTO.ProyectoId = dbProyecto.ProyectoId;
                     ProyectoDTO.Nombre = dbProyecto.Nombre;
                     ProyectoDTO.Descripcion = dbProyecto.Descripcion;
                     ProyectoDTO.FechaInicio = dbProyecto.FechaInicio;
                     ProyectoDTO.FechaFin = dbProyecto.FechaFin;
                     ProyectoDTO.Prioridad = dbProyecto.Prioridad;
                     ProyectoDTO.Estado = dbProyecto.Estado;
-                    ProyectoDTO.PresupuestoEstimado = dbProyecto.PresupuestoEstimado;
-                    ProyectoDTO.RecursosAsignados = dbProyecto.RecursosAsignados;
-                    ProyectoDTO.FechaCreacion = dbProyecto.FechaCreacion;
-                    ProyectoDTO.FechaActualizacion = dbProyecto.FechaActualizacion;
-
-
+                    ProyectoDTO.GerenteId = dbProyecto.GerenteId;
+                    ProyectoDTO.PorcentajeCompleto = dbProyecto.PorcentajeCompleto;
+                 
                     responseApi.EsCorrecto = true;
                     responseApi.Valor = ProyectoDTO;
                 }
@@ -103,6 +110,7 @@ namespace BlazorCrud.Server.Controllers
             return Ok(responseApi);
         }
 
+
         [HttpPost]
         [Route("Guardar")]
         public async Task<IActionResult> Guardar(ProyectoDTO proyecto)
@@ -120,19 +128,18 @@ namespace BlazorCrud.Server.Controllers
                     FechaFin = proyecto.FechaFin,
                     Prioridad = proyecto.Prioridad,
                     Estado = proyecto.Estado,
-                    PresupuestoEstimado = proyecto.PresupuestoEstimado,
-                    RecursosAsignados = proyecto.RecursosAsignados,
-                    FechaCreacion = proyecto.FechaCreacion,
-                    FechaActualizacion = proyecto.FechaActualizacion,
+                    GerenteId = proyecto.GerenteId,
+                    PorcentajeCompleto = proyecto.PorcentajeCompleto,
+               
                 };
 
                 _dbContext.Proyectos.Add(dbProyecto);
                 await _dbContext.SaveChangesAsync();
 
-                if(dbProyecto.Id != 0)
+                if(dbProyecto.ProyectoId != 0)
                 {
                     responseApi.EsCorrecto = true;
-                    responseApi.Valor = dbProyecto.Id;
+                    responseApi.Valor = dbProyecto.ProyectoId;
                 }
                 else
                 {
@@ -161,7 +168,7 @@ namespace BlazorCrud.Server.Controllers
             try
             {
 
-                var dbProyecto = await _dbContext.Proyectos.FirstOrDefaultAsync(e => e.Id == id);
+                var dbProyecto = await _dbContext.Proyectos.FirstOrDefaultAsync(e => e.ProyectoId == id);
 
                  
                 if (dbProyecto != null)
@@ -173,17 +180,15 @@ namespace BlazorCrud.Server.Controllers
                     dbProyecto.FechaFin = proyecto.FechaFin;
                     dbProyecto.Prioridad = proyecto.Prioridad;
                     dbProyecto.Estado = proyecto.Estado;
-                    dbProyecto.PresupuestoEstimado = proyecto.PresupuestoEstimado;
-                    dbProyecto.RecursosAsignados = proyecto.RecursosAsignados;
+                    dbProyecto.GerenteId = proyecto.GerenteId;
+                    dbProyecto.PorcentajeCompleto = proyecto.PorcentajeCompleto;
                      
-                    dbProyecto.FechaActualizacion = DateTime.Now;
-
 
                     _dbContext.Proyectos.Update(dbProyecto);
                     await _dbContext.SaveChangesAsync();
 
                     responseApi.EsCorrecto = true;
-                    responseApi.Valor = dbProyecto.Id;
+                    responseApi.Valor = dbProyecto.ProyectoId;
 
                 }
                 else
@@ -213,7 +218,7 @@ namespace BlazorCrud.Server.Controllers
             try
             {
 
-                var dbProyecto = await _dbContext.Proyectos.FirstOrDefaultAsync(e => e.Id == id);
+                var dbProyecto = await _dbContext.Proyectos.FirstOrDefaultAsync(e => e.ProyectoId == id);
 
 
                 if (dbProyecto != null)
