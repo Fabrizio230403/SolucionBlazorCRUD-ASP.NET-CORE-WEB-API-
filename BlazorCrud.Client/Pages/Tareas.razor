@@ -1,28 +1,27 @@
-﻿@page "/proyectos"
+﻿@page "/tareas"
 
 @using BlazorCrud.Shared;
 @using CurrieTechnologies.Razor.SweetAlert2;
 @using BlazorCrud.Client.Services;
 
 @inject SweetAlertService Swal;
-@inject IProyectoService proyectoService;
+@inject ITareaService tareaService;
 
-<h3>Proyectos</h3>
+<h3>Tareas</h3>
 
-<a class="btn btn-success btn-sm mb-3" href="proyecto">Nuevo Proyecto</a>
+<a class="btn btn-success btn-sm mb-3" href="tarea">Nueva Tarea</a>
 
 <table class="table">
     <thead>
         <tr>
             <th>#</th>
             <th>Nombre</th>
+            <th>Proyecto</th>
             <th>Descripción</th>
             <th>Fecha Inicio</th>
             <th>Fecha Fin</th>
             <th>Prioridad</th>
             <th>Estado</th>
-            <th>Presupuesto</th>
-            <th>Recursos Asignados</th>
             <th>Fecha Creación</th>
             <th>Fecha Actualización</th>
             <th>Acciones</th>
@@ -30,7 +29,7 @@
     </thead>
     <tbody>
 
-        @if(listaProyecto == null)
+        @if (listaTarea == null)
         {
             <tr>
                 <td colspan="11" align="center">
@@ -40,22 +39,21 @@
         }
         else
         {
-            @foreach(var item in listaProyecto)
+            @foreach (var item in listaTarea)
             {
                 <tr>
                     <td>@item.Id</td>
                     <td>@item.Nombre</td>
+                    <td>@item.ProyectoId</td>
                     <td>@item.Descripcion</td>
                     <td>@item.FechaInicio.ToString("dd/MM/yyyy")</td>
                     <td>@item.FechaFin?.ToString("dd/MM/yyyy")</td>
                     <td>@ObtenerDescripcionPrioridad(item.Prioridad)</td>
                     <td>@ObtenerDescripcionEstado(item.Estado)</td>
-                    <td>@item.PresupuestoEstimado</td>
-                    <td>@item.RecursosAsignados</td>
                     <td>@item.FechaCreacion</td>
                     <td>@item.FechaActualizacion</td>
                     <td>
-                        <a class="btn btn-primary btn-sm" href="proyecto/@item.Id">
+                        <a class="btn btn-primary btn-sm" href="tarea/@item.Id">
                             Editar
                         </a>
                         <button type="button" class="btn btn-danger btn-sm ms-2" @onclick="(() => Eliminar(item.Id))">
@@ -69,30 +67,29 @@
 </table>
 
 @code {
-    List<ProyectoDTO>? listaProyecto = null;
-
+    List<TareaDTO>? listaTarea = null;
 
     protected override async Task OnInitializedAsync()
     {
-        listaProyecto = await proyectoService.Lista();
+        listaTarea = await tareaService.Lista();
     }
 
     private async Task Eliminar(int id)
     {
         var resultado = await Swal.FireAsync(new SweetAlertOptions
-        {
-            Title = "Eliminar Proyecto",
-            Text = "Deseas eliminar el proyecto?",
-            Icon = SweetAlertIcon.Question,
-            ShowCancelButton = true
-        });
+            {
+                Title = "Eliminar Tarea",
+                Text = "¿Deseas eliminar la tarea?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true
+            });
 
         if (resultado.IsConfirmed)
         {
-            var eliminado = await proyectoService.Eliminar(id);
+            var eliminado = await tareaService.Eliminar(id);
 
             if (eliminado)
-                listaProyecto = listaProyecto!.FindAll(e => e.Id != id);
+                listaTarea = listaTarea!.FindAll(e => e.Id != id);
         }
     }
 

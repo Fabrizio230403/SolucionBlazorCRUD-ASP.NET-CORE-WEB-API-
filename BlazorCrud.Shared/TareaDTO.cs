@@ -6,15 +6,13 @@ using System.Threading.Tasks;
 
 using System.ComponentModel.DataAnnotations;
 
-
 namespace BlazorCrud.Shared
 {
-    public class ProyectoDTO
+    public class TareaDTO
     {
-
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "El campo Nombre es requerido.")]
+        [Required(ErrorMessage = "El campo nombre es requerido.")]
         [StringLength(100, ErrorMessage = "El nombre no puede exceder los {1} caracteres.")]
         public string Nombre { get; set; } = null!;
 
@@ -33,17 +31,11 @@ namespace BlazorCrud.Shared
         [StringLength(50, ErrorMessage = "El estado no puede exceder los {1} caracteres.")]
         public string? Estado { get; set; }
 
-        [Range(0, 1000000, ErrorMessage = "El presupuesto estimado debe estar entre {1} y {2}.")]
-        public decimal? PresupuestoEstimado { get; set; }
-
-        public string? RecursosAsignados { get; set; }
-
         public DateTime FechaCreacion { get; set; }
 
         public DateTime? FechaActualizacion { get; set; }
 
-         
-
+        public int ProyectoId { get; set; }
 
     }
 }

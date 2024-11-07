@@ -1,0 +1,155 @@
+﻿@page "/tarea"
+@page "/tarea/{idTareaEditar:int}"
+
+@using BlazorCrud.Shared;
+@using BlazorCrud.Client.Services;
+@using CurrieTechnologies.Razor.SweetAlert2
+
+@inject SweetAlertService Swal;
+@inject ITareaService tareaService;
+@inject NavigationManager navegacion;
+
+<h3>@titulo</h3>
+
+<EditForm Model="tarea" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator></DataAnnotationsValidator>
+
+    <div class="mb-3">
+        <label class="form-label">Nombre</label>
+        <InputText class="form-control" @bind-Value="tarea.Nombre"></InputText>
+        <ValidationMessage For="@(() => tarea.Nombre)"></ValidationMessage>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Descripción</label>
+        <InputText class="form-control" @bind-Value="tarea.Descripcion"></InputText>
+        <ValidationMessage For="@(() => tarea.Descripcion)"></ValidationMessage>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Fecha de Inicio</label>
+        <InputDate class="form-control" @bind-Value="tarea.FechaInicio"></InputDate>
+        <ValidationMessage For="@(() => tarea.FechaInicio)"></ValidationMessage>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Fecha de Fin</label>
+        <InputDate class="form-control" @bind-Value="tarea.FechaFin"></InputDate>
+        <ValidationMessage For="@(() => tarea.FechaFin)"></ValidationMessage>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Prioridad</label>
+        <InputSelect class="form-control" @bind-Value="tarea.Prioridad">
+            <option value="">Seleccionar</option>
+            <option value="A">Alta</option>
+            <option value="M">Media</option>
+            <option value="B">Baja</option>
+        </InputSelect>
+        <ValidationMessage For="@(() => tarea.Prioridad)"></ValidationMessage>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Estado</label>
+        <InputSelect class="form-control" @bind-Value="tarea.Estado">
+            <option value="">Seleccionar</option>
+            <option value="C">Completado</option>
+            <option value="X">Cancelado</option>
+            <option value="E">En Progreso</option>
+            <option value="P">Planeado</option>
+        </InputSelect>
+        <ValidationMessage For="@(() => tarea.Estado)"></ValidationMessage>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Fecha de Creación</label>
+        <InputDate class="form-control" @bind-Value="tarea.FechaCreacion" disabled="true"></InputDate>
+        <ValidationMessage For="@(() => tarea.FechaCreacion)"></ValidationMessage>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Fecha de Actualización</label>
+        <InputDate class="form-control" @bind-Value="tarea.FechaActualizacion" disabled="true"></InputDate>
+        <ValidationMessage For="@(() => tarea.FechaActualizacion)"></ValidationMessage>
+    </div>
+
+    <div class="mb-3">
+        <label for="proyectoId" class="form-label">Proyecto</label>
+        <InputSelect id="proyectoId" class="form-control" @bind-Value="tarea.ProyectoId">
+            <option value="">Seleccione un proyecto</option>
+            @foreach (var proyecto in proyectos)
+            {
+                <option value="@proyecto.Id">@proyecto.Nombre</option>
+            }
+        </InputSelect>
+        <ValidationMessage For="@(() => tarea.ProyectoId)"></ValidationMessage>
+    </div>
+
+    <button class="btn btn-primary" type="submit">
+        @btnTexto
+    </button>
+
+    <a class="btn btn-warning" href="tareas">Volver</a>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int idTareaEditar { get; set; } = 0;
+
+    string titulo = string.Empty;
+    string btnTexto = string.Empty;
+
+    TareaDTO tarea = new TareaDTO();
+    List<ProyectoDTO> proyectos = new List<ProyectoDTO>();
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        try { proyectos = await tareaService.ObtenerProyectos(); }
+        catch (Exception ex) { await Swal.FireAsync("Error", $"No se pudieron cargar los proyectos: {ex.Message}", SweetAlertIcon.Error); }
+
+        if (idTareaEditar != 0)
+        {
+            tarea = await tareaService.Buscar(idTareaEditar);
+            btnTexto = "Actualizar Tarea";
+            titulo = "Editar Tarea";
+        }
+        else
+        {
+            tarea.FechaCreacion = DateTime.Now;
+            tarea.FechaActualizacion = null;
+            btnTexto = "Guardar Tarea";
+            titulo = "Nueva Tarea";
+        }
+    }
+
+    private async Task OnValidSubmit()
+    {
+        if (!EsPrioridadValida(tarea.Prioridad))
+        {
+            await Swal.FireAsync("Error", "La prioridad debe ser A (Alta), M (Media) o B (Baja).", SweetAlertIcon.Error);
+            return;
+        }
+
+        if (!EsEstadoValido(tarea.Estado))
+        {
+            await Swal.FireAsync("Error", "El estado debe ser C (Completado), X (Cancelado), E (En Progreso) o P (Planeado).", SweetAlertIcon.Error);
+            return;
+        }
+
+        int idDevuelto = 0;
+        if (idTareaEditar == 0)
+            idDevuelto = await tareaService.Guardar(tarea);
+        else
+            idDevuelto = await tareaService.Editar(tarea);
+
+        if (idDevuelto != 0)
+            navegacion.NavigateTo("/tareas");
+    }
+
+    private bool EsPrioridadValida(string? prioridad)
+    {
+        return prioridad == "A" || prioridad == "M" || prioridad == "B";
+    }
+
+    private bool EsEstadoValido(string? estado)
+    {
+        return estado == "C" || estado == "X" || estado == "E" || estado == "P";
+    }
+}

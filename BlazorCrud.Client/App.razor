@@ -1,34 +1,12 @@
-﻿@using BlazorCrud.Client.Pages
-@using Microsoft.AspNetCore.Components.Authorization
-@inject NavigationManager navManager
-
-
-
-<CascadingAuthenticationState>
-    <Router AppAssembly="@typeof(App).Assembly">
-        <Found Context="routeData">
-            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
-                <NotAuthorized>
-                    @{
-                        if (context.User.Identity?.IsAuthenticated != true)
-                            navManager.NavigateTo("/");
-                        else
-                        {
-                            <p class="alert alert-danger">NO ESTÁ AUTORIZADO PARA VER ESTA PÁGINA</p>
-                        }
-                    }
-
-                </NotAuthorized>
-
-            </AuthorizeRouteView>
-
-        </Found>
-        <NotFound>
-            <PageTitle>Not found</PageTitle>
-            <LayoutView Layout="@typeof(MainLayout)">
-                <p role="alert">Sorry, there's nothing at this address.</p>
-            </LayoutView>
-        </NotFound>
-    </Router>
-</CascadingAuthenticationState>
- 
+﻿<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Not found</PageTitle>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <p role="alert">Disculpa, no hay nada que mostrar en esta dirección.</p>
+        </LayoutView>
+    </NotFound>
+</Router>
