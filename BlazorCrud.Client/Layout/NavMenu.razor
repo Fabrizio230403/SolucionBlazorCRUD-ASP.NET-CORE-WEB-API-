@@ -49,6 +49,11 @@
                         <span class="fas fa-tasks me-2" aria-hidden="true"></span> Tareas Asignadas
                     </NavLink>
                 </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="recursos">
+                        <span class="fas fa-clipboard-list me-2" aria-hidden="true"></span> Recursos del Proyecto
+                    </NavLink>
+                </div>
             </Authorized>            
         </AuthorizeView>
         <AuthorizeView Roles="Gerente de Proyecto">
@@ -58,8 +63,7 @@
                     <NavLink class="nav-link" href="dashboard">
                         <span class="fas fa-tachometer-alt me-2" aria-hidden="true"></span> Dashboard
                     </NavLink>
-                </div>
-                
+                </div>            
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="proyectos">
                         <span class="fas fa-briefcase me-2" aria-hidden="true"></span> Proyectos
@@ -68,6 +72,36 @@
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="tareas">
                         <span class="fas fa-tasks me-2" aria-hidden="true"></span> Tareas Asignadas
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="recursos">
+                        <span class="fas fa-clipboard-list me-2" aria-hidden="true"></span> Recursos del Proyecto
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+        <AuthorizeView Roles="Consultor">
+            <Authorized>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="dashboard">
+                        <span class="fas fa-tachometer-alt me-2" aria-hidden="true"></span> Dashboard
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="proyectos">
+                        <span class="fas fa-briefcase me-2" aria-hidden="true"></span> Proyectos
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="tareas">
+                        <span class="fas fa-tasks me-2" aria-hidden="true"></span> Tareas Asignadas
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="recursos">
+                        <span class="fas fa-clipboard-list me-2" aria-hidden="true"></span> Recursos del Proyecto
                     </NavLink>
                 </div>
             </Authorized>

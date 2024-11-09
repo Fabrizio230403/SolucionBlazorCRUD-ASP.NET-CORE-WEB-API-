@@ -1,0 +1,134 @@
+﻿ @page "/recurso"
+@page "/recurso/{idRecursoEditar:int}"
+
+@using BlazorCrud.Shared;
+@using BlazorCrud.Client.Services;
+@using CurrieTechnologies.Razor.SweetAlert2
+
+@inject SweetAlertService Swal;
+@inject IRecursoService recursoService;
+@inject IProyectoService proyectoService;
+@inject IUsuarioService usuarioService;
+@inject NavigationManager navegacion;
+
+<h3>@titulo</h3>
+
+<EditForm Model="recurso" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator></DataAnnotationsValidator>
+
+    <div class="mb-3">
+        <label class="form-label">Proyecto</label>
+        <InputSelect class="form-select" @bind-Value="recurso.ProyectoId">
+            <option value="0"> -- Seleccionar -- </option>
+            @foreach (var item in listaProyecto)
+            {
+                <option value="@item.ProyectoId">@item.Nombre</option>
+
+            }
+        </InputSelect>
+        <ValidationMessage For="@(() => recurso.ProyectoId)"></ValidationMessage>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Tipo de Recurso</label>
+        <InputSelect class="form-control" @bind-Value="recurso.Tipo">
+            <option value="">Seleccionar</option>
+            <option value="H">Humano</option>
+            <option value="M">Material</option>
+
+        </InputSelect>
+        <ValidationMessage For="@(() => recurso.Tipo)"></ValidationMessage>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Nombre</label>
+        <InputText class="form-control" @bind-Value="recurso.Nombre"></InputText>
+        <ValidationMessage For="@(() => recurso.Nombre)"></ValidationMessage>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Costo</label>
+        <InputNumber class="form-control" @bind-Value="recurso.Costo"></InputNumber>
+        <ValidationMessage For="@(() => recurso.Costo)"></ValidationMessage>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Tiempo Asignado</label>
+        <InputNumber class="form-control" @bind-Value="recurso.TiempoAsignado"></InputNumber>
+        <ValidationMessage For="@(() => recurso.TiempoAsignado)"></ValidationMessage>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Usuario</label>
+        <InputSelect class="form-select" @bind-Value="recurso.UsuarioId">
+            <option value="0"> -- Seleccionar -- </option>
+            @foreach (var item in listaUsuario)
+            {
+                <option value="@item.UsuarioId">@item.Nombre</option>
+
+            }
+        </InputSelect>
+        <ValidationMessage For="@(() => recurso.UsuarioId)"></ValidationMessage>
+    </div>
+
+    <button class="btn btn-primary" type="submit">
+        @btnTexto
+    </button>
+
+    <a class="btn btn-warning" href="recursos">Volver</a>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int idRecursoEditar { get; set; } = 0;
+
+
+    string titulo = string.Empty;
+    string btnTexto = string.Empty;
+
+    RecursoDTO recurso = new RecursoDTO();
+    List<ProyectoDTO> listaProyecto = new List<ProyectoDTO>();
+    List<UsuarioDTO> listaUsuario = new List<UsuarioDTO>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (idRecursoEditar != 0)
+        {
+            recurso = await recursoService.Buscar(idRecursoEditar);
+            btnTexto = "Actualizar Recurso";
+            titulo = "Editar Recurso";
+        }
+        else
+        {
+
+            btnTexto = "Guardar Recurso";
+            titulo = "Nuevo Recurso";
+        }
+
+        listaProyecto = await proyectoService.Lista();
+        listaUsuario = await usuarioService.Lista();
+    }
+
+
+    private async Task OnValidSubmit()
+    {
+
+        if (!EsTipoRecursoValido(recurso.Tipo))
+        {
+            await Swal.FireAsync("Error", "El tipo de recurso debe ser H (Humano), M (Material).", SweetAlertIcon.Error);
+            return;
+        }
+
+        int idDevuelto = 0;
+        if (idRecursoEditar == 0)
+            idDevuelto = await recursoService.Guardar(recurso);
+        else
+            idDevuelto = await recursoService.Editar(recurso);
+
+        if (idDevuelto != 0)
+            navegacion.NavigateTo("/recursos");
+    }
+
+    private bool EsTipoRecursoValido(string? tipo)
+    {
+        return tipo == "H" || tipo == "M";
+    }
+}

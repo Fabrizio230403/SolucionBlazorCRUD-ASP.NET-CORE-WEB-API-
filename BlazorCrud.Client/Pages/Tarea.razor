@@ -1,0 +1,141 @@
+﻿ @page "/tarea"
+@page "/tarea/{idTareaEditar:int}"
+
+@using BlazorCrud.Shared;
+@using BlazorCrud.Client.Services;
+@using CurrieTechnologies.Razor.SweetAlert2
+
+@inject SweetAlertService Swal;
+@inject ITareaService tareaService;
+@inject IProyectoService proyectoService;
+@inject IUsuarioService usuarioService;
+@inject NavigationManager navegacion;
+
+<h3>@titulo</h3>
+
+<EditForm Model="tarea" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator></DataAnnotationsValidator>
+
+    <div class="mb-3">
+        <label class="form-label">Proyecto</label>
+        <InputSelect class="form-select" @bind-Value="tarea.ProyectoId">
+            <option value="0"> -- Seleccionar -- </option>
+            @foreach (var item in listaProyecto)
+            {
+                <option value="@item.ProyectoId">@item.Nombre</option>
+
+            }
+        </InputSelect>
+        <ValidationMessage For="@(() => tarea.ProyectoId)"></ValidationMessage>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Nombre</label>
+        <InputText class="form-control" @bind-Value="tarea.Nombre"></InputText>
+        <ValidationMessage For="@(() => tarea.Nombre)"></ValidationMessage>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Descripción</label>
+        <InputText class="form-control" @bind-Value="tarea.Descripcion"></InputText>
+        <ValidationMessage For="@(() => tarea.Descripcion)"></ValidationMessage>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Fecha de Inicio</label>
+        <InputDate class="form-control" @bind-Value="tarea.FechaInicio"></InputDate>
+        <ValidationMessage For="@(() => tarea.FechaInicio)"></ValidationMessage>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Fecha de Finalización</label>
+        <InputDate class="form-control" @bind-Value="tarea.FechaFin"></InputDate>
+        <ValidationMessage For="@(() => tarea.FechaFin)"></ValidationMessage>
+    </div>
+ 
+    <div class="mb-3">
+        <label class="form-label">Estado</label>
+        <InputSelect class="form-control" @bind-Value="tarea.Estado">
+            <option value="">Seleccionar</option>
+            <option value="P">Pendiente</option>
+            <option value="E">En Progreso</option>
+            <option value="C">Completado</option>
+
+        </InputSelect>
+        <ValidationMessage For="@(() => tarea.Estado)"></ValidationMessage>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Usuario</label>
+        <InputSelect class="form-select" @bind-Value="tarea.UsuarioAsignadoId">
+            <option value="0"> -- Seleccionar -- </option>
+            @foreach (var item in listaUsuario)
+            {
+                <option value="@item.UsuarioId">@item.Nombre</option>
+
+            }
+        </InputSelect>
+        <ValidationMessage For="@(() => tarea.UsuarioAsignadoId)"></ValidationMessage>
+    </div>
+
+    <button class="btn btn-primary" type="submit">
+        @btnTexto
+    </button>
+
+    <a class="btn btn-warning" href="tareas">Volver</a>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int idTareaEditar { get; set; } = 0;
+
+
+    string titulo = string.Empty;
+    string btnTexto = string.Empty;
+
+    TareaDTO tarea = new TareaDTO();
+    List<ProyectoDTO> listaProyecto = new List<ProyectoDTO>();
+    List<UsuarioDTO> listaUsuario = new List<UsuarioDTO>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (idTareaEditar != 0)
+        {
+            tarea = await tareaService.Buscar(idTareaEditar);
+            btnTexto = "Actualizar Tarea";
+            titulo = "Editar Tarea";
+        }
+        else
+        {
+
+            btnTexto = "Guardar Tarea";
+            titulo = "Nueva Tarea";
+        }
+
+        listaProyecto = await proyectoService.Lista();
+        listaUsuario = await usuarioService.Lista();
+    }
+
+
+    private async Task OnValidSubmit()
+    {
+
+        if (!EsEstadoValido(tarea.Estado))
+        {
+            await Swal.FireAsync("Error", "El estado debe ser P (Pendiente), E (En Progreso), C (Completado).", SweetAlertIcon.Error);
+            return;
+        }
+
+        int idDevuelto = 0;
+        if (idTareaEditar == 0)
+            idDevuelto = await tareaService.Guardar(tarea);
+        else
+            idDevuelto = await tareaService.Editar(tarea);
+
+        if (idDevuelto != 0)
+            navegacion.NavigateTo("/tareas");
+    }
+
+    private bool EsEstadoValido(string? estado)
+    {
+        return estado == "P" || estado == "E" || estado == "C";
+    }
+
+}
