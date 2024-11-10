@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using BlazorCrud.Server.Models;
 
 namespace BlazorCrud.Server.Models;
 
@@ -162,4 +163,8 @@ public partial class SistemaConsultoriaContext : DbContext
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+
+public DbSet<BlazorCrud.Server.Models.Permiso> Permiso { get; set; } = default!;
+
+public DbSet<BlazorCrud.Server.Models.RolPermiso> Roles_Permisos { get; set; } = default!;
 }
