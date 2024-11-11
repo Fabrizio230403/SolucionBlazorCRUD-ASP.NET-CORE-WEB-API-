@@ -63,7 +63,7 @@ namespace BlazorCrud.Server.Controllers
 
                 var usuario = await _sistemaContext.Usuarios.FirstOrDefaultAsync(u => u.UsuarioId == usuarioId);
 
-                if (usuario == null)
+                if (usuario != null)
                 {
                     // Obtiene los IDs de permisos asociados al Rol del usuario
                     var permisoIds = await _sistemaContext.Roles_Permisos
@@ -84,6 +84,7 @@ namespace BlazorCrud.Server.Controllers
             catch (Exception ex)
             {
                 responseApi.EsCorrecto = false;
+                responseApi.Mensaje = "Error general";
             }
 
             return Ok(responseApi);

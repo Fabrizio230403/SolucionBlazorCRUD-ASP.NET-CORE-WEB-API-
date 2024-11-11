@@ -8,7 +8,6 @@ namespace BlazorCrud.Shared
 {
     public class RolPermisoDTO
     {
-
         public int rolId {  get; set; }
         public int permisoId { get; set; }
 

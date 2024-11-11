@@ -27,6 +27,8 @@ namespace BlazorCrud.Client.Services
         {
             var result = await _http.GetFromJsonAsync<ResponseAPI<List<int>>>($"api/RolPermiso/ListaPermisos/{usuarioId}");
 
+            Console.WriteLine($"Resultado de la API: {result?.EsCorrecto}, {result?.Mensaje}");
+
             if (result!.EsCorrecto)
                 return result.Valor!;
             else

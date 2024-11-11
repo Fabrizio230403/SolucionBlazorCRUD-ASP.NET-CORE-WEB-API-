@@ -71,6 +71,7 @@ namespace BlazorCrud.Server.Controllers
             // Crear el DTO de sesión usando los datos del usuario encontrado
             SesionDTO sesionDTO = new SesionDTO
             {
+                UsuarioId = usuario.UsuarioId,
                 Nombre = usuario.Nombre,
                 Correo = usuario.Email,
                 Rol = usuario.Rol?.Nombre ?? "Sin Rol"

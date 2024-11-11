@@ -5,14 +5,24 @@
 @using BlazorCrud.Shared;
 @using CurrieTechnologies.Razor.SweetAlert2;
 @using BlazorCrud.Client.Services;
+@using BlazorCrud.Client.Extensiones;
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims;
 
 @inject SweetAlertService Swal;
+@inject AuthenticationStateProvider autenticacionProvider
 @inject IProyectoService proyectoService;
+@inject IRolPermisoService RolPermisoService;
 
 <h3>Proyectos</h3>
 
+@if (permisos_usuario != null && permisos_usuario.Contains(1))
+{
 <a class="btn btn-success btn-sm mb-3" href="proyecto">Nuevo Proyecto</a>
+}
 
+@if (permisos_usuario != null && permisos_usuario.Contains(4))
+{
 <table class="table">
     <thead>
         <tr>
@@ -69,26 +79,47 @@
                         </div>
                     </td>
                     <td>
+                        @if (permisos_usuario != null && permisos_usuario.Contains(2))
+                        {
                         <a class="btn btn-primary btn-sm" href="proyecto/@item.ProyectoId">
                             <i class="fas fa-edit"></i>  
                         </a>
+                        }
+                        @if ( permisos_usuario != null && permisos_usuario.Contains(3) )
+                        {
                         <button type="button" class="btn btn-danger btn-sm" @onclick="(() => Eliminar(item.ProyectoId))">
                             <i class="fas fa-trash-alt"></i>  
                         </button>
+                        }
                     </td>
                 </tr>
             }
         }
     </tbody>
-</table>
+    </table>
+} else
+{
+    <h1>Usted no tiene permisos para visualisar los proyectos :v</h1>
+}
 
 @code {
     List<ProyectoDTO>? listaProyecto = null;
-
+    List<int>? permisos_usuario = null;
 
     protected override async Task OnInitializedAsync()
     {
         listaProyecto = await proyectoService.Lista();
+
+        // SESIÓN
+        var authState = await autenticacionProvider.GetAuthenticationStateAsync();
+        var usuario = authState.User;
+
+        if (usuario.Identity != null && usuario.Identity.IsAuthenticated)
+        {
+            var usuarioId = int.Parse(usuario.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            permisos_usuario = await RolPermisoService.ListaPermisos(usuarioId);
+        }
+        
     }
 
     private async Task Eliminar(int id)
@@ -171,4 +202,5 @@
             return $"{porcentajeEntero}%";  
         }
     }
+
 }

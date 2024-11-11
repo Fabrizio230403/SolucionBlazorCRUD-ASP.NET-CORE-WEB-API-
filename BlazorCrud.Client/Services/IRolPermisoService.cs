@@ -5,6 +5,6 @@ namespace BlazorCrud.Client.Services
     public interface IRolPermisoService
     {
         Task<List<RolPermisoDTO>> Lista();
-        Task<List<int>> ListaPermisos();
+        Task<List<int>> ListaPermisos(int usuarioId);
     }
 }
