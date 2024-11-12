@@ -1,6 +1,6 @@
 ﻿@page "/proyectos"
 @using Microsoft.AspNetCore.Authorization;
-@attribute [Authorize(Roles = "Administrador,Gerente de Proyecto")]
+@attribute [Authorize(Roles = "Administrador,Gerente de Proyecto, Consultor")]
 
 @using BlazorCrud.Shared;
 @using CurrieTechnologies.Razor.SweetAlert2;
@@ -35,7 +35,10 @@
             <th>Estado</th>
             <th>Usuario</th>
             <th>Porcentaje(%)</th>     
-            <th>Acciones</th>
+                @if (permisos_usuario != null && permisos_usuario.Contains(2) || permisos_usuario.Contains(3))
+            {
+                <th>Acciones</th>
+            }
         </tr>
     </thead>
     <tbody>
@@ -78,20 +81,23 @@
                             </div>
                         </div>
                     </td>
-                    <td>
-                        @if (permisos_usuario != null && permisos_usuario.Contains(2))
-                        {
-                        <a class="btn btn-primary btn-sm" href="proyecto/@item.ProyectoId">
-                            <i class="fas fa-edit"></i>  
-                        </a>
-                        }
-                        @if ( permisos_usuario != null && permisos_usuario.Contains(3) )
-                        {
-                        <button type="button" class="btn btn-danger btn-sm" @onclick="(() => Eliminar(item.ProyectoId))">
-                            <i class="fas fa-trash-alt"></i>  
-                        </button>
-                        }
-                    </td>
+                        @if (permisos_usuario != null && permisos_usuario.Contains(2) || permisos_usuario.Contains(3))
+                    {
+                        <td>
+                            @if (permisos_usuario != null && permisos_usuario.Contains(2))
+                            {
+                                <a class="btn btn-primary btn-sm" href="proyecto/@item.ProyectoId">
+                                    <i class="fas fa-edit"></i>  
+                                </a>
+                            }
+                            @if (permisos_usuario != null && permisos_usuario.Contains(3))
+                            {
+                                <button type="button" class="btn btn-danger btn-sm" @onclick="(() => Eliminar(item.ProyectoId))">
+                                    <i class="fas fa-trash-alt"></i>  
+                                </button>
+                            }
+                        </td>
+                    }
                 </tr>
             }
         }
@@ -99,7 +105,7 @@
     </table>
 } else
 {
-    <h1>Usted no tiene permisos para visualisar los proyectos :v</h1>
+    <h1>Usted no tiene permisos para visualisar los proyectos</h1>
 }
 
 @code {
