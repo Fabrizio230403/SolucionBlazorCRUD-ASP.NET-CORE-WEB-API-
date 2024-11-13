@@ -56,35 +56,35 @@ namespace BlazorCrud.Server.Controllers
         [Route("ListaPermisos/{usuarioId}")]
         public async Task<IActionResult> ListaPermisos(int usuarioId)
         {
-            var responseApi = new ResponseAPI<List<int>>();
+            var responseApi = new ResponseAPI<List<string>>();
 
             try
             {
-
                 var usuario = await _sistemaContext.Usuarios.FirstOrDefaultAsync(u => u.UsuarioId == usuarioId);
 
                 if (usuario != null)
                 {
-                    // Obtiene los IDs de permisos asociados al Rol del usuario
-                    var permisoIds = await _sistemaContext.Roles_Permisos
+                    var permisoNombres = await _sistemaContext.Roles_Permisos
                         .Where(rp => rp.RolId == usuario.RolId)
-                        .Select(rp => rp.PermisoId)
+                        .Join(_sistemaContext.Permiso,
+                              rp => rp.PermisoId,
+                              p => p.PermisoID,
+                              (rp, p) => p.Nombre)
                         .ToListAsync();
 
                     responseApi.EsCorrecto = true;
-                    responseApi.Valor = permisoIds;
+                    responseApi.Valor = permisoNombres;
                 }
                 else
                 {
                     responseApi.EsCorrecto = false;
                     responseApi.Mensaje = "Usuario no encontrado.";
                 }
-
             }
             catch (Exception ex)
             {
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = "Error general";
+                responseApi.Mensaje = "Error general: " + ex;
             }
 
             return Ok(responseApi);

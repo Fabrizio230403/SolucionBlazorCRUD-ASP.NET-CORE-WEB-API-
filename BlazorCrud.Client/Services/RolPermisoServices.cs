@@ -23,9 +23,9 @@ namespace BlazorCrud.Client.Services
                 throw new Exception(result.Mensaje);
         }
 
-        public async Task<List<int>> ListaPermisos(int usuarioId)
+        public async Task<List<String>> ListaPermisos(int usuarioId)
         {
-            var result = await _http.GetFromJsonAsync<ResponseAPI<List<int>>>($"api/RolPermiso/ListaPermisos/{usuarioId}");
+            var result = await _http.GetFromJsonAsync<ResponseAPI<List<String>>>($"api/RolPermiso/ListaPermisos/{usuarioId}");
 
             Console.WriteLine($"Resultado de la API: {result?.EsCorrecto}, {result?.Mensaje}");
 

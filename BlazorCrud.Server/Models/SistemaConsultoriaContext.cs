@@ -165,6 +165,8 @@ public partial class SistemaConsultoriaContext : DbContext
 
         modelBuilder.Entity<Permiso>(entity =>
         {
+            entity.ToTable("Permisos");
+
             entity.HasKey(e => e.PermisoID);
             entity.Property(e => e.Nombre).IsRequired().HasMaxLength(50);
             entity.Property(e => e.Descripcion).HasMaxLength(250);
