@@ -1,0 +1,118 @@
+﻿@page "/tareas"
+
+@using BlazorCrud.Shared;
+@using CurrieTechnologies.Razor.SweetAlert2;
+@using BlazorCrud.Client.Services;
+
+@inject SweetAlertService Swal;
+@inject ITareaService tareaService;
+
+<h3>Tareas</h3>
+
+<a class="btn btn-success btn-sm mb-3" href="tarea">Nueva Tarea</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Proyecto</th>
+            <th>Descripción</th>
+            <th>Fecha Inicio</th>
+            <th>Fecha Fin</th>
+            <th>Prioridad</th>
+            <th>Estado</th>
+            <th>Fecha Creación</th>
+            <th>Fecha Actualización</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @if (listaTarea == null)
+        {
+            <tr>
+                <td colspan="11" align="center">
+                    <img style="width:50px" src="https://media.tenor.com/On7kvXhzmI4AAAAj/loading-gif.gif" />
+                </td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var item in listaTarea)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Nombre</td>
+                    <td>@item.ProyectoId</td>
+                    <td>@item.Descripcion</td>
+                    <td>@item.FechaInicio.ToString("dd/MM/yyyy")</td>
+                    <td>@item.FechaFin?.ToString("dd/MM/yyyy")</td>
+                    <td>@ObtenerDescripcionPrioridad(item.Prioridad)</td>
+                    <td>@ObtenerDescripcionEstado(item.Estado)</td>
+                    <td>@item.FechaCreacion</td>
+                    <td>@item.FechaActualizacion</td>
+                    <td>
+                        <a class="btn btn-primary btn-sm" href="tarea/@item.Id">
+                            Editar
+                        </a>
+                        <button type="button" class="btn btn-danger btn-sm ms-2" @onclick="(() => Eliminar(item.Id))">
+                            Eliminar
+                        </button>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+@code {
+    List<TareaDTO>? listaTarea = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        listaTarea = await tareaService.Lista();
+    }
+
+    private async Task Eliminar(int id)
+    {
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Eliminar Tarea",
+                Text = "¿Deseas eliminar la tarea?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true
+            });
+
+        if (resultado.IsConfirmed)
+        {
+            var eliminado = await tareaService.Eliminar(id);
+
+            if (eliminado)
+                listaTarea = listaTarea!.FindAll(e => e.Id != id);
+        }
+    }
+
+    private string ObtenerDescripcionPrioridad(string? prioridad)
+    {
+        return prioridad switch
+        {
+            "A" => "Alta",
+            "M" => "Media",
+            "B" => "Baja",
+            _ => "Desconocida"
+        };
+    }
+
+    private string ObtenerDescripcionEstado(string? estado)
+    {
+        return estado switch
+        {
+            "E" => "En Progreso",
+            "P" => "Planeado",
+            "C" => "Completado",
+            "X" => "Cancelado",
+            _ => "Desconocido"
+        };
+    }
+}
