@@ -1,0 +1,31 @@
+﻿.navbar.navbar-dark {
+    background-color: rgb(95, 9, 121) !important;
+}
+
+.nav-scrollable {
+    background-color: #881ff9 !important;
+}
+
+.navbar {
+    background-color: #881ff9 !important;
+}
+
+.nav-link {
+    color: white !important;
+}
+
+.nav-link:hover {
+    background-color: #3a0975 !important;
+}
+
+.nav-link:hover {
+    color: #cfcfcf !important;
+}
+
+.navbar-toggler {
+    border-color: white !important;
+}
+
+.navbar-toggler-icon {
+    background-color: white !important;
+}

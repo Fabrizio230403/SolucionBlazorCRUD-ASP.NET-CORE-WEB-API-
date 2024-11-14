@@ -1,5 +1,8 @@
 ﻿@page "/proyectos"
 
+@using Microsoft.AspNetCore.Authorization;
+@attribute [Authorize(Roles = "Administrador,Gerente de Proyecto")]
+
 @using BlazorCrud.Shared;
 @using CurrieTechnologies.Razor.SweetAlert2;
 @using BlazorCrud.Client.Services;
@@ -21,15 +24,12 @@
             <th>Fecha Fin</th>
             <th>Prioridad</th>
             <th>Estado</th>
-            <th>Presupuesto</th>
-            <th>Recursos Asignados</th>
-            <th>Fecha Creación</th>
-            <th>Fecha Actualización</th>
+            <th>Usuario</th>
+            <th>Porcentaje(%)</th>
             <th>Acciones</th>
         </tr>
     </thead>
     <tbody>
-
         @if(listaProyecto == null)
         {
             <tr>
@@ -40,29 +40,47 @@
         }
         else
         {
-            @foreach(var item in listaProyecto)
+            int contador = 1;
+
+            @foreach (var item in listaProyecto)
             {
                 <tr>
-                    <td>@item.Id</td>
+                    <td>@contador</td>
                     <td>@item.Nombre</td>
                     <td>@item.Descripcion</td>
-                    <td>@item.FechaInicio.ToString("dd/MM/yyyy")</td>
-                    <td>@item.FechaFin?.ToString("dd/MM/yyyy")</td>
+                    <td>@item.FechaInicio</td>
+                    <td>@item.FechaFin</td>
                     <td>@ObtenerDescripcionPrioridad(item.Prioridad)</td>
                     <td>@ObtenerDescripcionEstado(item.Estado)</td>
-                    <td>@item.PresupuestoEstimado</td>
-                    <td>@item.RecursosAsignados</td>
-                    <td>@item.FechaCreacion</td>
-                    <td>@item.FechaActualizacion</td>
+                    <td>@item.GerenteID</td>
                     <td>
-                        <a class="btn btn-primary btn-sm" href="proyecto/@item.Id">
-                            Editar
+                        <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+                            <div class="progress" style="height: 20px; width: 100%;">
+                                <div class="progress-bar @(item.PorcentajeCompleto == 100 ? "bg-success" : 
+                                    item.PorcentajeCompleto >= 50 ? "bg-info" : "bg-warning")"
+                                     role="progressbar"
+                                     style="width: @(ObtenerWidthPorcentaje(item.PorcentajeCompleto));"
+                                     aria-valuenow="@item.PorcentajeCompleto"
+                                     aria-valuemin="0"
+                                     aria-valuemax="100">
+                                </div>
+                            </div>
+                            <div style="font-size: 12px; margin-top: 5px; text-align: center;">
+                                @item.PorcentajeCompleto%
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <a class="btn btn-primary btn-sm" href="proyecto/@item.ProyectoID">
+                            <i class="fas fa-edit"></i> Editar
                         </a>
-                        <button type="button" class="btn btn-danger btn-sm ms-2" @onclick="(() => Eliminar(item.Id))">
-                            Eliminar
+                        <button type="button" class="btn btn-danger btn-sm" @onclick="(() => Eliminar(item.ProyectoID))">
+                            <i class="fas fa-trash-alt"></i> Eliminar
                         </button>
                     </td>
                 </tr>
+
+                contador++;
             }
         }
     </tbody>
@@ -80,19 +98,19 @@
     private async Task Eliminar(int id)
     {
         var resultado = await Swal.FireAsync(new SweetAlertOptions
-        {
-            Title = "Eliminar Proyecto",
-            Text = "Deseas eliminar el proyecto?",
-            Icon = SweetAlertIcon.Question,
-            ShowCancelButton = true
-        });
+            {
+                Title = "Eliminar Proyecto",
+                Text = "Deseas eliminar el proyecto?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true
+            });
 
         if (resultado.IsConfirmed)
         {
             var eliminado = await proyectoService.Eliminar(id);
 
             if (eliminado)
-                listaProyecto = listaProyecto!.FindAll(e => e.Id != id);
+                listaProyecto = listaProyecto!.FindAll(e => e.ProyectoID != id);
         }
     }
 
@@ -111,11 +129,50 @@
     {
         return estado switch
         {
+            "P" => "Pendiente",
             "E" => "En Progreso",
-            "P" => "Planeado",
             "C" => "Completado",
-            "X" => "Cancelado",
             _ => "Desconocido"
         };
+    }
+
+    private string ObtenerWidthPorcentaje(decimal? porcentaje)
+    {
+
+        if (porcentaje == null)
+            return "0%";
+
+
+        int porcentajeEntero = (int)Math.Round(porcentaje.Value);
+
+
+        if (porcentajeEntero == 0)
+        {
+            return "0%";
+        }
+        else if (porcentajeEntero == 100)
+        {
+            return "105%";
+        }
+        else
+        {
+
+            if (porcentajeEntero <= 10)
+                return $"{porcentajeEntero + 5}%";
+
+            if (porcentajeEntero <= 30)
+                return $"{porcentajeEntero + 5}%";
+
+            if (porcentajeEntero <= 50)
+                return $"{porcentajeEntero}%";
+
+            if (porcentajeEntero <= 70)
+                return $"{porcentajeEntero}%";
+
+            if (porcentajeEntero <= 90)
+                return $"{porcentajeEntero + 3}%";
+
+            return $"{porcentajeEntero}%";
+        }
     }
 }

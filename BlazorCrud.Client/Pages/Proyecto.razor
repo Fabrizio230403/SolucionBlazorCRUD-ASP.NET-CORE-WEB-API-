@@ -7,6 +7,7 @@
 
 @inject SweetAlertService Swal;
 @inject IProyectoService proyectoService;
+@inject IUsuarioService usuarioService;
 @inject NavigationManager navegacion;
 
 <h3>@titulo</h3>
@@ -30,7 +31,7 @@
         <ValidationMessage For="@(() => proyecto.FechaInicio)"></ValidationMessage>
     </div>
     <div class="mb-3">
-        <label class="form-label">Fecha de Actualización</label>
+        <label class="form-label">Fecha de Finalización</label>
         <InputDate class="form-control" @bind-Value="proyecto.FechaFin"></InputDate>
         <ValidationMessage For="@(() => proyecto.FechaFin)"></ValidationMessage>
     </div>
@@ -49,37 +50,33 @@
         <label class="form-label">Estado</label>
         <InputSelect class="form-control" @bind-Value="proyecto.Estado">
             <option value="">Seleccionar</option>
-            <option value="C">Completado</option>
-            <option value="X">Cancelado</option>
+            <option value="P">Pendiente</option>
             <option value="E">En Progreso</option>
-            <option value="P">Planeado</option>
+            <option value="C">Completado</option>
+
         </InputSelect>
         <ValidationMessage For="@(() => proyecto.Estado)"></ValidationMessage>
     </div>
 
     <div class="mb-3">
-        <label class="form-label">Presupuesto Estimado</label>
-        <InputNumber class="form-control" @bind-Value="proyecto.PresupuestoEstimado"></InputNumber>
-        <ValidationMessage For="@(() => proyecto.PresupuestoEstimado)"></ValidationMessage>
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Recursos Asignados</label>
-        <InputText class="form-control" @bind-Value="proyecto.RecursosAsignados"></InputText>
-        <ValidationMessage For="@(() => proyecto.RecursosAsignados)"></ValidationMessage>
-    </div>
-     
-    <div class="mb-3">
-        <label class="form-label">Fecha de Creación</label>
-        <InputDate class="form-control" @bind-Value="proyecto.FechaCreacion" disabled="true"></InputDate>
-        <ValidationMessage For="@(() => proyecto.FechaCreacion)"></ValidationMessage>
+        <label class="form-label">Usuario</label>
+        <InputSelect class="form-select" @bind-Value="proyecto.GerenteID">
+            <option value="0"> -- Seleccionar -- </option>
+            @foreach (var item in listaUsuario)
+            {
+                <option value="@item.UsuarioId">@item.Nombre</option>
+
+            }
+        </InputSelect>
+        <ValidationMessage For="@(() => proyecto.GerenteID)"></ValidationMessage>
     </div>
 
-     
     <div class="mb-3">
-        <label class="form-label">Fecha de Actualización</label>
-        <InputDate class="form-control" @bind-Value="proyecto.FechaActualizacion" disabled="true"></InputDate>
-        <ValidationMessage For="@(() => proyecto.FechaActualizacion)"></ValidationMessage>
+        <label class="form-label">Porcentaje(%)</label>
+        <InputNumber class="form-control" @bind-Value="proyecto.PorcentajeCompleto"></InputNumber>
+        <ValidationMessage For="@(() => proyecto.PorcentajeCompleto)"></ValidationMessage>
     </div>
+
 
     <button class="btn btn-primary" type="submit">
         @btnTexto
@@ -98,6 +95,7 @@
     string btnTexto = string.Empty;
 
     ProyectoDTO proyecto = new ProyectoDTO();
+    List<UsuarioDTO> listaUsuario = new List<UsuarioDTO>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -105,15 +103,16 @@
         {
             proyecto = await proyectoService.Buscar(idProyectoEditar);
             btnTexto = "Actualizar Proyecto";
-            titulo = "Editar Empleado";
+            titulo = "Editar Proyecto";
         }
         else
         {
-            proyecto.FechaCreacion = DateTime.Now; 
-            proyecto.FechaActualizacion = null;  
+
             btnTexto = "Guardar Proyecto";
-            titulo = "Nuevo Empleado";
+            titulo = "Nuevo Proyecto";
         }
+
+        listaUsuario = await usuarioService.Lista();
     }
 
     private async Task OnValidSubmit()
@@ -126,7 +125,7 @@
 
         if (!EsEstadoValido(proyecto.Estado))
         {
-            await Swal.FireAsync("Error", "El estado debe ser C (Completado), X (Cancelado), E (En Progreso) o P (Planeado).", SweetAlertIcon.Error);
+            await Swal.FireAsync("Error", "El estado debe ser P (Pendiente), E (En Progreso), C (Completado).", SweetAlertIcon.Error);
             return;
         }
 
@@ -147,7 +146,7 @@
 
     private bool EsEstadoValido(string? estado)
     {
-        return estado == "C" || estado == "X" || estado == "E" || estado == "P";
+        return estado == "P" || estado == "E" || estado == "C";
     }
 
 }

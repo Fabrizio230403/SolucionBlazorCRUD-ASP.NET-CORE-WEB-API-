@@ -25,20 +25,18 @@ namespace BlazorCrud.Server.Controllers
 
             try
             {
-                foreach (var item in await _dbContext.Tarea.ToListAsync())
+                foreach (var item in await _dbContext.Tareas.ToListAsync())
                 {
                     listaTareaDTO.Add(new TareaDTO
                     {
-                        Id = item.Id,
+                        TareaID = item.TareaID,
                         Nombre = item.Nombre,
-                        ProyectoId = item.ProyectoId,
+                        ProyectoID = item.ProyectoID,
                         Descripcion = item.Descripcion,
                         FechaInicio = item.FechaInicio,
                         FechaFin = item.FechaFin,
-                        Prioridad = item.Prioridad,
                         Estado = item.Estado,
-                        FechaCreacion = item.FechaCreacion,
-                        FechaActualizacion = item.FechaActualizacion,
+                        UsuarioAsignadoID = item.UsuarioAsignadoID
                     });
                 }
 
@@ -55,6 +53,7 @@ namespace BlazorCrud.Server.Controllers
             return Ok(responseApi);
         }
 
+
         [HttpGet]
         [Route("Buscar/{id}")]
         public async Task<IActionResult> Buscar(int id)
@@ -64,19 +63,18 @@ namespace BlazorCrud.Server.Controllers
 
             try
             {
-                var dbTarea = await _dbContext.Tarea.FirstOrDefaultAsync(x => x.Id == id);
+                var dbTarea = await _dbContext.Tareas.FirstOrDefaultAsync(x => x.TareaID == id);
 
                 if (dbTarea != null)
                 {
-                    tareaDTO.Id = dbTarea.Id;
+                    tareaDTO.TareaID = dbTarea.TareaID;
                     tareaDTO.Nombre = dbTarea.Nombre;
                     tareaDTO.Descripcion = dbTarea.Descripcion;
                     tareaDTO.FechaInicio = dbTarea.FechaInicio;
                     tareaDTO.FechaFin = dbTarea.FechaFin;
-                    tareaDTO.Prioridad = dbTarea.Prioridad;
                     tareaDTO.Estado = dbTarea.Estado;
-                    tareaDTO.FechaCreacion = dbTarea.FechaCreacion;
-                    tareaDTO.FechaActualizacion = dbTarea.FechaActualizacion;
+                    tareaDTO.ProyectoID = dbTarea.ProyectoID;
+                    tareaDTO.UsuarioAsignadoID = dbTarea.UsuarioAsignadoID;
 
                     responseApi.EsCorrecto = true;
                     responseApi.Valor = tareaDTO;
@@ -96,6 +94,8 @@ namespace BlazorCrud.Server.Controllers
             return Ok(responseApi);
         }
 
+
+
         [HttpPost]
         [Route("Guardar")]
         public async Task<IActionResult> Guardar(TareaDTO tarea)
@@ -110,18 +110,17 @@ namespace BlazorCrud.Server.Controllers
                     Descripcion = tarea.Descripcion,
                     FechaInicio = tarea.FechaInicio,
                     FechaFin = tarea.FechaFin,
-                    Prioridad = tarea.Prioridad,
                     Estado = tarea.Estado,
-                    FechaCreacion = tarea.FechaCreacion,
-                    FechaActualizacion = tarea.FechaActualizacion,
-                    ProyectoId = tarea.ProyectoId
+                    ProyectoID = tarea.ProyectoID,
+                    UsuarioAsignadoID = tarea.UsuarioAsignadoID,
+
                 };
 
-                _dbContext.Tarea.Add(dbTarea);
+                _dbContext.Tareas.Add(dbTarea);
                 await _dbContext.SaveChangesAsync();
 
                 responseApi.EsCorrecto = true;
-                responseApi.Valor = dbTarea.Id;
+                responseApi.Valor = dbTarea.TareaID;
             }
             catch (Exception ex)
             {
@@ -140,7 +139,7 @@ namespace BlazorCrud.Server.Controllers
             var responseApi = new ResponseAPI<int>();
             try
             {
-                var dbTarea = await _dbContext.Tarea.FirstOrDefaultAsync(e => e.Id == id);
+                var dbTarea = await _dbContext.Tareas.FirstOrDefaultAsync(e => e.TareaID == id);
 
                 if (dbTarea != null)
                 {
@@ -148,15 +147,13 @@ namespace BlazorCrud.Server.Controllers
                     dbTarea.Descripcion = tarea.Descripcion;
                     dbTarea.FechaInicio = tarea.FechaInicio;
                     dbTarea.FechaFin = tarea.FechaFin;
-                    dbTarea.Prioridad = tarea.Prioridad;
                     dbTarea.Estado = tarea.Estado;
-                    dbTarea.FechaActualizacion = DateTime.Now;
 
-                    _dbContext.Tarea.Update(dbTarea);
+                    _dbContext.Tareas.Update(dbTarea);
                     await _dbContext.SaveChangesAsync();
 
                     responseApi.EsCorrecto = true;
-                    responseApi.Valor = dbTarea.Id;
+                    responseApi.Valor = dbTarea.TareaID;
                 }
                 else
                 {
@@ -172,7 +169,6 @@ namespace BlazorCrud.Server.Controllers
 
             return Ok(responseApi);
         }
-
 
         [HttpDelete]
         [Route("Eliminar/{id}")]
@@ -181,11 +177,11 @@ namespace BlazorCrud.Server.Controllers
             var responseApi = new ResponseAPI<int>();
             try
             {
-                var dbTarea = await _dbContext.Tarea.FirstOrDefaultAsync(e => e.Id == id);
+                var dbTarea = await _dbContext.Tareas.FirstOrDefaultAsync(e => e.TareaID == id);
 
                 if (dbTarea != null)
                 {
-                    _dbContext.Tarea.Remove(dbTarea);
+                    _dbContext.Tareas.Remove(dbTarea);
                     await _dbContext.SaveChangesAsync();
 
                     responseApi.EsCorrecto = true;
@@ -204,6 +200,9 @@ namespace BlazorCrud.Server.Controllers
 
             return Ok(responseApi);
         }
+
+
+
 
     }
 }

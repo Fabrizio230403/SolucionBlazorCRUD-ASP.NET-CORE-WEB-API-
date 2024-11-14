@@ -8,29 +8,27 @@
 @inject AuthenticationStateProvider autenticacionProvider
 @inject NavigationManager navManager
 
- 
 
-<div class="row mt-5"> 
-    <div class="col-lg-4 offset-lg-4">
-        <div class="mb-3 text-center">
-            <h3>LOGIN</h3>
+<div class="container-general">
+    <div class="container-login">
+
+        <div class="login-title">
+            <h3>Inicia Sesión</h3>
         </div>
 
-        <div class="mb-3">
-            <label>Correo</label>
-            <input @bind="login.Correo" class="form-control"/>
+        <div class="input-row">
+            <label>Correo:</label>
+            <input @bind="login.Correo" class="form-control" />
         </div>
 
-        <div class="mb-3">
-            <label>Contraseña</label>
-            <input @bind="login.Clave" class="form-control" />
+        <div class="input-row">
+            <label>Contraseña:</label>
+            <input type="password" @bind="login.Clave" class="form-control" />
         </div>
 
-        <div class="mb-3">
-             <button @onclick="IniciarSesion" class="btn btn-primary">Login</button>
+        <div class="input-row">
+            <button @onclick="IniciarSesion" class="btn btn-primary">Login</button>
         </div>
-
-
     </div>
 </div>
 

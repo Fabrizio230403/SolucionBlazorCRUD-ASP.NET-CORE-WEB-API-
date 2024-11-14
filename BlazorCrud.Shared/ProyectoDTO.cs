@@ -12,7 +12,7 @@ namespace BlazorCrud.Shared
     public class ProyectoDTO
     {
 
-        public int Id { get; set; }
+        public int ProyectoID { get; set; }
 
         [Required(ErrorMessage = "El campo Nombre es requerido.")]
         [StringLength(100, ErrorMessage = "El nombre no puede exceder los {1} caracteres.")]
@@ -22,7 +22,7 @@ namespace BlazorCrud.Shared
         public string? Descripcion { get; set; }
 
         [DataType(DataType.Date)]
-        public DateOnly FechaInicio { get; set; }
+        public DateOnly? FechaInicio { get; set; }
 
         [DataType(DataType.Date)]
         public DateOnly? FechaFin { get; set; }
@@ -33,17 +33,9 @@ namespace BlazorCrud.Shared
         [StringLength(50, ErrorMessage = "El estado no puede exceder los {1} caracteres.")]
         public string? Estado { get; set; }
 
-        [Range(0, 1000000, ErrorMessage = "El presupuesto estimado debe estar entre {1} y {2}.")]
-        public decimal? PresupuestoEstimado { get; set; }
+        public int? GerenteID { get; set; }
 
-        public string? RecursosAsignados { get; set; }
-
-        public DateTime FechaCreacion { get; set; }
-
-        public DateTime? FechaActualizacion { get; set; }
-
-         
-
+        public decimal? PorcentajeCompleto { get; set; }
 
     }
 }

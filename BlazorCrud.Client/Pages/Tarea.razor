@@ -19,30 +19,47 @@
         <InputText class="form-control" @bind-Value="tarea.Nombre"></InputText>
         <ValidationMessage For="@(() => tarea.Nombre)"></ValidationMessage>
     </div>
+
+    <div class="mb-3">
+        <label for="proyectoId" class="form-label">Proyecto</label>
+        <InputSelect id="proyectoId" class="form-control" @bind-Value="tarea.ProyectoID">
+            <option value="">Seleccione un proyecto</option>
+            @foreach (var proyecto in proyectos)
+            {
+                <option value="@proyecto.ProyectoID">@proyecto.Nombre</option>
+            }
+        </InputSelect>
+        <ValidationMessage For="@(() => tarea.ProyectoID)"></ValidationMessage>
+    </div>
+
+    <div class="mb-3">
+        <label for="usuarioId" class="form-label">Usuario</label>
+        <InputSelect id="usuarioId" class="form-control" @bind-Value="tarea.UsuarioAsignadoID">
+            <option value="">Seleccione un usuario</option>
+            @foreach (var usuario in usuarios)
+            {
+                <option value="@usuario.UsuarioId">@usuario.Nombre</option>
+            }
+        </InputSelect>
+        <ValidationMessage For="@(() => tarea.UsuarioAsignadoID)"></ValidationMessage>
+    </div>
+
     <div class="mb-3">
         <label class="form-label">Descripción</label>
         <InputText class="form-control" @bind-Value="tarea.Descripcion"></InputText>
         <ValidationMessage For="@(() => tarea.Descripcion)"></ValidationMessage>
     </div>
+
     <div class="mb-3">
         <label class="form-label">Fecha de Inicio</label>
         <InputDate class="form-control" @bind-Value="tarea.FechaInicio"></InputDate>
         <ValidationMessage For="@(() => tarea.FechaInicio)"></ValidationMessage>
     </div>
+
     <div class="mb-3">
         <label class="form-label">Fecha de Fin</label>
         <InputDate class="form-control" @bind-Value="tarea.FechaFin"></InputDate>
         <ValidationMessage For="@(() => tarea.FechaFin)"></ValidationMessage>
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Prioridad</label>
-        <InputSelect class="form-control" @bind-Value="tarea.Prioridad">
-            <option value="">Seleccionar</option>
-            <option value="A">Alta</option>
-            <option value="M">Media</option>
-            <option value="B">Baja</option>
-        </InputSelect>
-        <ValidationMessage For="@(() => tarea.Prioridad)"></ValidationMessage>
     </div>
 
     <div class="mb-3">
@@ -55,30 +72,6 @@
             <option value="P">Planeado</option>
         </InputSelect>
         <ValidationMessage For="@(() => tarea.Estado)"></ValidationMessage>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Fecha de Creación</label>
-        <InputDate class="form-control" @bind-Value="tarea.FechaCreacion" disabled="true"></InputDate>
-        <ValidationMessage For="@(() => tarea.FechaCreacion)"></ValidationMessage>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Fecha de Actualización</label>
-        <InputDate class="form-control" @bind-Value="tarea.FechaActualizacion" disabled="true"></InputDate>
-        <ValidationMessage For="@(() => tarea.FechaActualizacion)"></ValidationMessage>
-    </div>
-
-    <div class="mb-3">
-        <label for="proyectoId" class="form-label">Proyecto</label>
-        <InputSelect id="proyectoId" class="form-control" @bind-Value="tarea.ProyectoId">
-            <option value="">Seleccione un proyecto</option>
-            @foreach (var proyecto in proyectos)
-            {
-                <option value="@proyecto.Id">@proyecto.Nombre</option>
-            }
-        </InputSelect>
-        <ValidationMessage For="@(() => tarea.ProyectoId)"></ValidationMessage>
     </div>
 
     <button class="btn btn-primary" type="submit">
@@ -97,12 +90,16 @@
 
     TareaDTO tarea = new TareaDTO();
     List<ProyectoDTO> proyectos = new List<ProyectoDTO>();
+    List<UsuarioDTO> usuarios = new List<UsuarioDTO>();
 
     protected override async Task OnInitializedAsync()
     {
 
         try { proyectos = await tareaService.ObtenerProyectos(); }
         catch (Exception ex) { await Swal.FireAsync("Error", $"No se pudieron cargar los proyectos: {ex.Message}", SweetAlertIcon.Error); }
+
+        try { usuarios = await tareaService.ObtenerUsuarios(); }
+        catch (Exception ex) { await Swal.FireAsync("Error", $"No se pudieron cargar los usuarios: {ex.Message}", SweetAlertIcon.Error); }
 
         if (idTareaEditar != 0)
         {
@@ -112,8 +109,6 @@
         }
         else
         {
-            tarea.FechaCreacion = DateTime.Now;
-            tarea.FechaActualizacion = null;
             btnTexto = "Guardar Tarea";
             titulo = "Nueva Tarea";
         }
@@ -121,12 +116,6 @@
 
     private async Task OnValidSubmit()
     {
-        if (!EsPrioridadValida(tarea.Prioridad))
-        {
-            await Swal.FireAsync("Error", "La prioridad debe ser A (Alta), M (Media) o B (Baja).", SweetAlertIcon.Error);
-            return;
-        }
-
         if (!EsEstadoValido(tarea.Estado))
         {
             await Swal.FireAsync("Error", "El estado debe ser C (Completado), X (Cancelado), E (En Progreso) o P (Planeado).", SweetAlertIcon.Error);

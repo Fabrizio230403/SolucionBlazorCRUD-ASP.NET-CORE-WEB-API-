@@ -1,4 +1,5 @@
 ﻿using BlazorCrud.Shared;
+using System.Net.Http;
 using System.Net.Http.Json;
 
 namespace BlazorCrud.Client.Services
@@ -45,7 +46,7 @@ namespace BlazorCrud.Client.Services
 
         public async Task<int> Editar(TareaDTO tarea)
         {
-            var result = await _http.PutAsJsonAsync($"api/Tarea/Editar/{tarea.Id}", tarea);
+            var result = await _http.PutAsJsonAsync($"api/Tarea/Editar/{tarea.TareaID}", tarea);
             var response = await result.Content.ReadFromJsonAsync<ResponseAPI<int>>();
 
             if (response!.EsCorrecto)
@@ -69,7 +70,7 @@ namespace BlazorCrud.Client.Services
         {
             try
             {
-                var result = await _http.GetFromJsonAsync<ResponseAPI<List<ProyectoDTO>>>("api/Tarea/Lista");
+                var result = await _http.GetFromJsonAsync<ResponseAPI<List<ProyectoDTO>>>("api/Proyecto/Lista");
 
                 if (result != null && result.EsCorrecto && result.Valor != null)
                 {
@@ -85,6 +86,30 @@ namespace BlazorCrud.Client.Services
                 throw new Exception($"Error al obtener proyectos: {ex.Message}");
             }
         }
+
+
+        public async Task<List<UsuarioDTO>> ObtenerUsuarios()
+        {
+            try
+            {
+                var result = await _http.GetFromJsonAsync<ResponseAPI<List<UsuarioDTO>>>("api/Empleado/Lista");
+
+                if (result != null && result.EsCorrecto && result.Valor != null)
+                {
+                    return result.Valor;
+                }
+                else
+                {
+                    throw new Exception(result?.Mensaje ?? "Error desconocido al obtener usuarios");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error al obtener usuarios: {ex.Message}");
+            }
+        }
+
+
 
     }
 }

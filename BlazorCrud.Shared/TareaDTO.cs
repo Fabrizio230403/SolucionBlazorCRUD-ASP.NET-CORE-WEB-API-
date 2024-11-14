@@ -10,7 +10,7 @@ namespace BlazorCrud.Shared
 {
     public class TareaDTO
     {
-        public int Id { get; set; }
+        public int TareaID { get; set; }
 
         [Required(ErrorMessage = "El campo nombre es requerido.")]
         [StringLength(100, ErrorMessage = "El nombre no puede exceder los {1} caracteres.")]
@@ -20,7 +20,7 @@ namespace BlazorCrud.Shared
         public string? Descripcion { get; set; }
 
         [DataType(DataType.Date)]
-        public DateOnly FechaInicio { get; set; }
+        public DateOnly? FechaInicio { get; set; }
 
         [DataType(DataType.Date)]
         public DateOnly? FechaFin { get; set; }
@@ -31,11 +31,9 @@ namespace BlazorCrud.Shared
         [StringLength(50, ErrorMessage = "El estado no puede exceder los {1} caracteres.")]
         public string? Estado { get; set; }
 
-        public DateTime FechaCreacion { get; set; }
+        public int ProyectoID { get; set; }
 
-        public DateTime? FechaActualizacion { get; set; }
-
-        public int ProyectoId { get; set; }
+        public int UsuarioAsignadoID { get; set; }
 
     }
 }
