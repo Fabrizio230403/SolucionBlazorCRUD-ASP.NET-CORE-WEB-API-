@@ -5,7 +5,7 @@ using BlazorCrud.Server.Models;
 using BlazorCrud.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using BlazorCrud.Server.Custom;
 
 namespace BlazorCrud.Server.Controllers
 {
@@ -15,10 +15,12 @@ namespace BlazorCrud.Server.Controllers
     {
 
         private readonly SistemaConsultoriaContext _sistemaConsultoriaContext;
+         
 
         public EmpleadoController(SistemaConsultoriaContext sistemaConsultoriaContext)
         {
             _sistemaConsultoriaContext = sistemaConsultoriaContext;
+            
         }
 
         [HttpGet]
@@ -63,7 +65,7 @@ namespace BlazorCrud.Server.Controllers
             return Ok(responseApi);
         }
 
-
+ 
         [HttpGet]
         [Route("Buscar/{id}")]
         public async Task<IActionResult> Buscar(int id)

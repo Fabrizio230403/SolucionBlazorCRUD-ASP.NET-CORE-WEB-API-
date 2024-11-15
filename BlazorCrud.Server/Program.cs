@@ -1,5 +1,9 @@
 using BlazorCrud.Server.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using BlazorCrud.Server.Custom;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +20,26 @@ builder.Services.AddDbContext<SistemaConsultoriaContext>(opciones =>
     opciones.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQL"));
 }
 );
+
+builder.Services.AddScoped<Utilidades>();
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+        };
+    });
+
+
+
 
 builder.Services.AddCors(opciones => {
     opciones.AddPolicy("nuevaPolitica", app =>
@@ -37,6 +61,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("nuevaPolitica");
 
+app.UseAuthentication();
 
 app.UseAuthorization();
 

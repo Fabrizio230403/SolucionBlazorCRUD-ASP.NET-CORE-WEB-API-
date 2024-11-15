@@ -23,7 +23,7 @@
 
         <div class="mb-3">
             <label>Contraseña</label>
-            <input @bind="login.Clave" class="form-control" />
+            <input @bind="login.Clave" class="form-control"  />
         </div>
 
         <div class="mb-3">
@@ -39,14 +39,34 @@
 
     private async Task IniciarSesion()
     {
-        var loginResponse = await httpClient.PostAsJsonAsync<LoginDTO>("/api/Usuario/Login", login);
+        var loginResponse = await httpClient.PostAsJsonAsync("/api/Usuario/Login", login);
         if (loginResponse.IsSuccessStatusCode)
         {
-            var sesionUsuario = await loginResponse.Content.ReadFromJsonAsync<SesionDTO>();
-            var autenticacionExt = (AutenticacionExtension)autenticacionProvider;
-            await autenticacionExt.ActualizarEstadoAutenticacion(sesionUsuario);
+            // Aquí se espera que la respuesta incluya tanto el token como los datos del usuario
+            var responseContent = await loginResponse.Content.ReadFromJsonAsync<LoginResponseDTO>();
 
-            navManager.NavigateTo("/Home");
+            if (responseContent != null)
+            {
+                var sesionUsuario = new SesionDTO
+                    {
+                        Nombre = responseContent.Usuario.Nombre,
+                        Correo = responseContent.Usuario.Email,
+                        Rol = responseContent.Usuario.Rol?.Nombre,
+                        Token = responseContent.Token
+                    };
+
+                // Actualiza el estado de autenticación
+                var autenticacionExt = (AutenticacionExtension)autenticacionProvider;
+                await autenticacionExt.ActualizarEstadoAutenticacion(sesionUsuario);
+
+                // Redirige al home o a la página principal
+                navManager.NavigateTo("/Home");
+            }
+        }
+        else
+        {
+            // Manejo de error: usuario o clave incorrectos
+            // Podrías agregar algún mensaje de error visual
         }
     }
 }

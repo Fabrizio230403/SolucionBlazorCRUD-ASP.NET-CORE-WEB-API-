@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using BlazorCrud.Server.Models;
 using BlazorCrud.Shared;
 using Microsoft.EntityFrameworkCore;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BlazorCrud.Server.Controllers
 {
@@ -19,7 +19,17 @@ namespace BlazorCrud.Server.Controllers
         }
 
 
-        [HttpGet]
+
+        /*[HttpGet]
+        [Route("ListaProyectos")]
+        public async Task<IActionResult> ListaProyectos()
+        {
+            var lista = await _dbContext.Proyectos.ToListAsync();
+            return StatusCode(StatusCodes.Status200OK, new { value = lista});
+        
+        }*/
+
+            [HttpGet]
         [Route("Lista")]
         public async Task<IActionResult> Lista()
         {

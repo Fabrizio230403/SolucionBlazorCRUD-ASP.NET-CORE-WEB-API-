@@ -20,7 +20,7 @@
             <th>#</th>
             <th>Nombre</th>
             <th>Email</th>
-            <th>Contraseña</th>
+            <th>Contraseña Establecida</th>
             <th>Rol</th>
             <th>Fecha de Creación</th>
             <th>Acciones</th>
@@ -44,9 +44,9 @@
                     <td>@item.UsuarioId</td>
                     <td>@item.Nombre</td>
                     <td>@item.Email</td>
-                    <td>@item.PasswordHash</td>
-                    <td>@item.Rol!.Nombre</td>
-                    <td>@item.FechaCreacion?.ToString("dd/MM/yyyy hh:mm:ss")</td>               
+                    <td>@(string.IsNullOrEmpty(item.PasswordHash) ? "No Establecida" : "Establecida")</td>
+                    <td>@(item.Rol != null ? item.Rol.Nombre : "Sin Rol Asignado")</td>
+                    <td>@item.FechaCreacion?.ToString("dd/MM/yyyy hh:mm:ss")</td>
                     <td>
                         <a class="btn btn-primary btn-sm" href="usuario/@item.UsuarioId">
                             <i class="fas fa-edit"></i>
@@ -54,6 +54,7 @@
                         <button type="button" class="btn btn-danger btn-sm" @onclick="(() => Eliminar(item.UsuarioId))">
                             <i class="fas fa-trash-alt"></i>
                         </button>
+                        
                     </td>
                 </tr>
             }
@@ -90,4 +91,5 @@
         }
     }
 
+     
 }

@@ -21,15 +21,15 @@ namespace BlazorCrud.Client.Extensiones
         {
             ClaimsPrincipal claimsPrincipal;
 
-            if(sesionUsuario != null)
+            if (sesionUsuario != null)
             {
                 claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
-                {
-                    new Claim(ClaimTypes.Name, sesionUsuario.Nombre),
-                    new Claim(ClaimTypes.Email, sesionUsuario.Correo),
-                    new Claim(ClaimTypes.Role, sesionUsuario.Rol),
-
-                },"JwtAuth"));
+        {
+            new Claim(ClaimTypes.Name, sesionUsuario.Nombre),
+            new Claim(ClaimTypes.Email, sesionUsuario.Correo),
+            new Claim(ClaimTypes.Role, sesionUsuario.Rol),
+            new Claim("token", sesionUsuario.Token) // Almacena el token JWT
+        }, "JwtAuth"));
 
                 await _sessionStorage.GuardarStorage("sesionUsuario", sesionUsuario);
             }

@@ -14,5 +14,9 @@ Welcome to your new app.
 <AuthorizeView>
     <Authorized>
         <h1>Bienvenido @context.User.Identity!.Name</h1>
+        <p>Correo: @context.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value</p>
+        <p>Rol: @context.User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</p>
+
+
     </Authorized>
 </AuthorizeView>

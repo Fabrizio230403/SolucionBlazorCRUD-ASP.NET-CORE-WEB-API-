@@ -6,13 +6,11 @@ using System.Threading.Tasks;
 
 namespace BlazorCrud.Shared
 {
-    public class SesionDTO
+    public class RegistroDTO
     {
         public string Nombre { get; set; }
         public string Correo { get; set; }
-        public string Rol { get; set; }
-        public string Token { get; set; }
-
-
+        public string Clave { get; set; }
+        public int RolId { get; set; }
     }
 }
