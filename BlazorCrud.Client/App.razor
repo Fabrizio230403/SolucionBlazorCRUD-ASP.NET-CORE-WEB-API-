@@ -31,4 +31,17 @@
         </NotFound>
     </Router>
 </CascadingAuthenticationState>
- 
+
+@* <Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Not found</PageTitle>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <p role="alert">Disculpa, no hay nada que mostrar en esta dirección.</p>
+        </LayoutView>
+    </NotFound>
+</Router>
+ *@

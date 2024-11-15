@@ -9,7 +9,6 @@ namespace BlazorCrud.Client.Extensiones
     {
 
         private readonly ISessionStorageService _sessionStorage;
-        //Para guardar info del user
         private ClaimsPrincipal _sinInformacion = new ClaimsPrincipal(new ClaimsIdentity());
 
         public AutenticacionExtension(ISessionStorageService sessionStorage)

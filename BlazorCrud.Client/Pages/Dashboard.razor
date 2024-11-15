@@ -1,0 +1,126 @@
+﻿@page "/dashboard"
+
+@using ChartJs.Blazor
+@using ChartJs.Blazor.Common
+@using Microsoft.AspNetCore.Authorization;
+@attribute [Authorize(Roles = "Administrador,Gerente de Proyecto")]
+
+@using BlazorCrud.Shared;
+@using CurrieTechnologies.Razor.SweetAlert2;
+@using BlazorCrud.Client.Services;
+@using ChartJs.Blazor.BarChart;
+@using ChartJs.Blazor.Util;
+
+@inject SweetAlertService Swal;
+@inject IProyectoService proyectoService;
+
+<h3>Dashboard</h3>
+
+@if (listaProyecto == null)
+{
+    <p>Cargando proyectos...</p>
+}
+else if (listaProyecto.Count == 0)
+{
+    <p>No hay proyectos disponibles para mostrar.</p>
+}
+else
+{
+    <Chart Config="@_configuracionBarras"></Chart>
+}
+
+@code {
+    List<ProyectoDTO>? listaProyecto = null;
+    private BarConfig _configuracionBarras;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            listaProyecto = await proyectoService.Lista();
+            ConfigurarGraficoBarras();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error al cargar proyectos: {ex.Message}");
+        }
+    }
+
+    private void ConfigurarGraficoBarras()
+    {
+        if (listaProyecto == null || listaProyecto.Count == 0)
+        {
+            return;
+        }
+
+        _configuracionBarras = new BarConfig
+            {
+                Options = new BarOptions
+                {
+                    Responsive = true,
+                    Title = new OptionsTitle
+                    {
+                        Display = true,
+                        Text = "Progreso de Proyectos"
+                    }
+                }
+            };
+
+        foreach (var proyecto in listaProyecto)
+        {
+            _configuracionBarras.Data.Labels.Add(proyecto.Nombre);
+        }
+
+        var dataset = new BarDataset<decimal?>
+            {
+                Label = "Porcentaje %",
+                BackgroundColor = ColorUtil.ColorHexString(0, 123, 255)
+            };
+
+        foreach (var proyecto in listaProyecto)
+        {
+            dataset.Add(proyecto.PorcentajeCompleto ?? 0);
+        }
+
+        _configuracionBarras.Data.Datasets.Add(dataset);
+    }
+
+    private async Task Eliminar(int id)
+    {
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Eliminar Proyecto",
+                Text = "Deseas eliminar el proyecto?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true
+            });
+
+        if (resultado.IsConfirmed)
+        {
+            var eliminado = await proyectoService.Eliminar(id);
+
+            if (eliminado)
+            {
+                listaProyecto = listaProyecto!.FindAll(e => e.ProyectoID != id);
+                ConfigurarGraficoBarras();
+            }
+        }
+    }
+
+    private string ObtenerWidthPorcentaje(decimal? porcentaje)
+    {
+        if (porcentaje == null) return "0%";
+        int porcentajeEntero = (int)Math.Round(porcentaje.Value);
+
+        return porcentajeEntero switch
+        {
+            0 => "0%",
+            <= 10 => $"{porcentajeEntero + 5}%",
+            <= 30 => $"{porcentajeEntero + 5}%",
+            <= 50 => $"{porcentajeEntero}%",
+            <= 70 => $"{porcentajeEntero}%",
+            <= 90 => $"{porcentajeEntero + 3}%",
+            _ => $"{porcentajeEntero}%"
+        };
+    }
+}

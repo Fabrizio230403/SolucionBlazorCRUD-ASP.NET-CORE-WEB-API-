@@ -1,4 +1,4 @@
-﻿ @page "/proyecto"
+﻿@page "/proyecto"
 @page "/proyecto/{idProyectoEditar:int}"
 
 @using BlazorCrud.Shared;
@@ -53,31 +53,30 @@
             <option value="P">Pendiente</option>
             <option value="E">En Progreso</option>
             <option value="C">Completado</option>
-         
+
         </InputSelect>
         <ValidationMessage For="@(() => proyecto.Estado)"></ValidationMessage>
     </div>
 
     <div class="mb-3">
         <label class="form-label">Usuario</label>
-        <InputSelect class="form-select" @bind-Value="proyecto.GerenteId">
+        <InputSelect class="form-select" @bind-Value="proyecto.GerenteID">
             <option value="0"> -- Seleccionar -- </option>
-            @foreach(var item in listaUsuario)
+            @foreach (var item in listaUsuario)
             {
                 <option value="@item.UsuarioId">@item.Nombre</option>
 
             }
         </InputSelect>
-        <ValidationMessage For="@(() => proyecto.GerenteId)"></ValidationMessage>     
+        <ValidationMessage For="@(() => proyecto.GerenteID)"></ValidationMessage>
     </div>
-         
+
     <div class="mb-3">
         <label class="form-label">Porcentaje(%)</label>
         <InputNumber class="form-control" @bind-Value="proyecto.PorcentajeCompleto"></InputNumber>
         <ValidationMessage For="@(() => proyecto.PorcentajeCompleto)"></ValidationMessage>
     </div>
 
-  
 
     <button class="btn btn-primary" type="submit">
         @btnTexto

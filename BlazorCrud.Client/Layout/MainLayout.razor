@@ -12,7 +12,6 @@
 
     <main>
         <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
             <a @onclick="CerrarSesion" href="javascript:void(0)">Cerrar Sesión</a>
         </div>
 
@@ -22,12 +21,12 @@
     </main>
 </div>
 
-@code{
+@code {
     private async Task CerrarSesion()
     {
         var autenticacionExt = (AutenticacionExtension)autenticacionProvider;
         await autenticacionExt.ActualizarEstadoAutenticacion(null);
-        navManager.NavigateTo("/",true);
+        navManager.NavigateTo("/", true);
     }
 
 }
