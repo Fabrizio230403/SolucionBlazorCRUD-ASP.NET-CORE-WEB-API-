@@ -1,0 +1,146 @@
+﻿@page "/dashboard"
+
+@using ChartJs.Blazor
+@using ChartJs.Blazor.Common
+@using Microsoft.AspNetCore.Authorization;
+@attribute [Authorize(Roles = "Administrador,Gerente de Proyecto")]
+
+@using BlazorCrud.Shared;
+@using CurrieTechnologies.Razor.SweetAlert2;
+@using BlazorCrud.Client.Services;
+@using ChartJs.Blazor.BarChart;
+@using ChartJs.Blazor.PieChart;
+@using ChartJs.Blazor.Util;
+
+@inject SweetAlertService Swal;
+@inject IProyectoService proyectoService;
+@inject ITareaService tareaService;
+
+<h3>Dashboard</h3>
+
+@if (listaProyecto == null){
+    <p>Cargando proyectos...</p>
+}
+
+else if (listaProyecto.Count == 0){
+    <p>No hay proyectos disponibles para mostrar.</p>
+}
+else{
+    <div style="display: flex;">
+        <div style="width: 60%;">
+            <Chart Config="@_configuracionBarras"></Chart>
+        </div>
+        <div style="width: 40%;">
+            <Chart Config="@_configuracionPie"></Chart>
+        </div>
+    </div>
+}
+
+@code {
+    List<ProyectoDTO>? listaProyecto = null;
+    List<TareaDTO>? listaTarea = null;
+
+    private BarConfig _configuracionBarras;
+    private PieConfig _configuracionPie;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            listaProyecto = await proyectoService.Lista();
+            listaTarea = await tareaService.Lista();
+
+            ConfigurarGraficoBarras();
+            ConfigurarGraficoAnillo();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error al cargar datos: {ex.Message}");
+        }
+    }
+
+    private void ConfigurarGraficoBarras()
+    {
+        if (listaProyecto == null || listaProyecto.Count == 0)
+        {
+            return;
+        }
+        _configuracionBarras = new BarConfig
+            {
+                Options = new BarOptions
+                {
+                    Responsive = true,
+                    Title = new OptionsTitle
+                    {
+                        Display = true,
+                        Text = "Progreso de Proyectos"
+                    }
+                }
+            };
+
+        foreach (var proyecto in listaProyecto)
+        {
+            _configuracionBarras.Data.Labels.Add(proyecto.Nombre);
+        }
+
+        var dataset = new BarDataset<decimal?>
+            {
+                Label = "Porcentaje %",
+                BackgroundColor = ColorUtil.ColorHexString(0, 123, 255)
+            };
+
+        foreach (var proyecto in listaProyecto)
+        {
+            dataset.Add(proyecto.PorcentajeCompleto ?? 0);
+        }
+
+        _configuracionBarras.Data.Datasets.Add(dataset);
+    }
+
+    private void ConfigurarGraficoAnillo()
+    {
+        if (listaTarea == null || listaTarea.Count == 0)
+        {
+            return;
+        }
+
+        var totalTareas = listaTarea.Count;
+        var estados = new[] { "E", "P", "C" };
+        var colores = new[]
+        {
+            ColorUtil.ColorHexString(40, 167, 69), // Verde para Completado
+            ColorUtil.ColorHexString(255, 193, 7), // Amarillo para En Progreso
+            ColorUtil.ColorHexString(0, 123, 255) // Azul para Planeado
+        };
+        var dataset = new PieDataset<decimal>
+            {
+                BackgroundColor = colores
+            };
+
+        foreach (var estado in estados)
+        {
+            var count = listaTarea.Count(t => t.Estado == estado); // Filtra tareas por estado.
+            var porcentaje = Math.Round((decimal)count / totalTareas * 100, 2);
+            dataset.Add(porcentaje);
+        }
+
+        _configuracionPie = new PieConfig
+            {
+                Options = new PieOptions
+                {
+                    Responsive = true,
+                    Title = new OptionsTitle
+                    {
+                        Display = true,
+                        Text = "Estado de Tareas (%)"
+                    }
+                }
+            };
+
+        foreach (var estado in estados)
+        {
+            _configuracionPie.Data.Labels.Add(estado);
+        }
+        _configuracionPie.Data.Datasets.Add(dataset);
+    }
+}

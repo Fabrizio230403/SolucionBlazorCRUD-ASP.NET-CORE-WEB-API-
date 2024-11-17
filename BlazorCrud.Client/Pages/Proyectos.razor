@@ -1,0 +1,178 @@
+﻿@page "/proyectos"
+
+@using Microsoft.AspNetCore.Authorization;
+@attribute [Authorize(Roles = "Administrador,Gerente de Proyecto")]
+
+@using BlazorCrud.Shared;
+@using CurrieTechnologies.Razor.SweetAlert2;
+@using BlazorCrud.Client.Services;
+
+@inject SweetAlertService Swal;
+@inject IProyectoService proyectoService;
+
+<h3>Proyectos</h3>
+
+<a class="btn btn-success btn-sm mb-3" href="proyecto">Nuevo Proyecto</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Fecha Inicio</th>
+            <th>Fecha Fin</th>
+            <th>Prioridad</th>
+            <th>Estado</th>
+            <th>Usuario</th>
+            <th>Porcentaje(%)</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if(listaProyecto == null)
+        {
+            <tr>
+                <td colspan="11" align="center">
+                    <img style="width:50px" src="https://media.tenor.com/On7kvXhzmI4AAAAj/loading-gif.gif" />
+                </td>
+            </tr>
+        }
+        else
+        {
+            int contador = 1;
+
+            @foreach (var item in listaProyecto)
+            {
+                <tr>
+                    <td>@contador</td>
+                    <td>@item.Nombre</td>
+                    <td>@item.Descripcion</td>
+                    <td>@item.FechaInicio</td>
+                    <td>@item.FechaFin</td>
+                    <td>@ObtenerDescripcionPrioridad(item.Prioridad)</td>
+                    <td>@ObtenerDescripcionEstado(item.Estado)</td>
+                    <td>@item.GerenteID</td>
+                    <td>
+                        <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+                            <div class="progress" style="height: 20px; width: 100%;">
+                                <div class="progress-bar @(item.PorcentajeCompleto == 100 ? "bg-success" : 
+                                    item.PorcentajeCompleto >= 50 ? "bg-info" : "bg-warning")"
+                                     role="progressbar"
+                                     style="width: @(ObtenerWidthPorcentaje(item.PorcentajeCompleto));"
+                                     aria-valuenow="@item.PorcentajeCompleto"
+                                     aria-valuemin="0"
+                                     aria-valuemax="100">
+                                </div>
+                            </div>
+                            <div style="font-size: 12px; margin-top: 5px; text-align: center;">
+                                @item.PorcentajeCompleto%
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <a class="btn btn-primary btn-sm" href="proyecto/@item.ProyectoID">
+                            <i class="fas fa-edit"></i> Editar
+                        </a>
+                        <button type="button" class="btn btn-danger btn-sm" @onclick="(() => Eliminar(item.ProyectoID))">
+                            <i class="fas fa-trash-alt"></i> Eliminar
+                        </button>
+                    </td>
+                </tr>
+
+                contador++;
+            }
+        }
+    </tbody>
+</table>
+
+@code {
+    List<ProyectoDTO>? listaProyecto = null;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        listaProyecto = await proyectoService.Lista();
+    }
+
+    private async Task Eliminar(int id)
+    {
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Eliminar Proyecto",
+                Text = "Deseas eliminar el proyecto?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true
+            });
+
+        if (resultado.IsConfirmed)
+        {
+            var eliminado = await proyectoService.Eliminar(id);
+
+            if (eliminado)
+                listaProyecto = listaProyecto!.FindAll(e => e.ProyectoID != id);
+        }
+    }
+
+    private string ObtenerDescripcionPrioridad(string? prioridad)
+    {
+        return prioridad switch
+        {
+            "A" => "Alta",
+            "M" => "Media",
+            "B" => "Baja",
+            _ => "Desconocida"
+        };
+    }
+
+    private string ObtenerDescripcionEstado(string? estado)
+    {
+        return estado switch
+        {
+            "P" => "Pendiente",
+            "E" => "En Progreso",
+            "C" => "Completado",
+            _ => "Desconocido"
+        };
+    }
+
+    private string ObtenerWidthPorcentaje(decimal? porcentaje)
+    {
+
+        if (porcentaje == null)
+            return "0%";
+
+
+        int porcentajeEntero = (int)Math.Round(porcentaje.Value);
+
+
+        if (porcentajeEntero == 0)
+        {
+            return "0%";
+        }
+        else if (porcentajeEntero == 100)
+        {
+            return "105%";
+        }
+        else
+        {
+
+            if (porcentajeEntero <= 10)
+                return $"{porcentajeEntero + 5}%";
+
+            if (porcentajeEntero <= 30)
+                return $"{porcentajeEntero + 5}%";
+
+            if (porcentajeEntero <= 50)
+                return $"{porcentajeEntero}%";
+
+            if (porcentajeEntero <= 70)
+                return $"{porcentajeEntero}%";
+
+            if (porcentajeEntero <= 90)
+                return $"{porcentajeEntero + 3}%";
+
+            return $"{porcentajeEntero}%";
+        }
+    }
+}

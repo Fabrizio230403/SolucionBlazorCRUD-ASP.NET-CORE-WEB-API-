@@ -1,0 +1,93 @@
+﻿@page "/usuarios"
+@using Microsoft.AspNetCore.Authorization;
+@attribute [Authorize(Roles = "Administrador")]
+
+@using BlazorCrud.Shared;
+@using CurrieTechnologies.Razor.SweetAlert2;
+@using BlazorCrud.Client.Services;
+
+@inject SweetAlertService Swal;
+@inject IUsuarioService usuarioService;
+
+<h3>Usuarios</h3>
+
+<a class="btn btn-success btn-sm mb-3" href="usuario">Nuevo Usuario</a>
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Contraseña</th>
+            <th>Rol</th>
+            <th>Fecha de Creación</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @if (listaUsuario == null)
+        {
+            <tr>
+                <td colspan="11" align="center">
+                    <img style="width:50px" src="https://media.tenor.com/On7kvXhzmI4AAAAj/loading-gif.gif" />
+                </td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var item in listaUsuario)
+            {
+                <tr>
+                    <td>@item.UsuarioId</td>
+                    <td>@item.Nombre</td>
+                    <td>@item.Email</td>
+                    <td>@item.PasswordHash</td>
+                    <td>@item.Rol!.Nombre</td>
+                    <td>@item.FechaCreacion?.ToString("dd/MM/yyyy hh:mm:ss")</td>               
+                    <td>
+                        <a class="btn btn-primary btn-sm" href="usuario/@item.UsuarioId">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <button type="button" class="btn btn-danger btn-sm" @onclick="(() => Eliminar(item.UsuarioId))">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+
+@code {
+    List<UsuarioDTO>? listaUsuario = null;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        listaUsuario = await usuarioService.Lista();
+    }
+
+    private async Task Eliminar(int id)
+    {
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Eliminar Usuario",
+                Text = "Deseas eliminar el usuario?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true
+            });
+
+        if (resultado.IsConfirmed)
+        {
+            var eliminado = await usuarioService.Eliminar(id);
+
+            if (eliminado)
+                listaUsuario = listaUsuario!.FindAll(e => e.UsuarioId != id);
+        }
+    }
+
+}
