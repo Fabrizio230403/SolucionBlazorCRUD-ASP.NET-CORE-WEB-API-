@@ -1,0 +1,66 @@
+﻿@page "/registro"
+@layout LoginLayout
+
+@inject HttpClient httpClient
+@using BlazorCrud.Shared
+@inject NavigationManager navManager
+
+<div class="container-general">
+    <div class="container-login">
+        <div class="login-title">
+            <h3>Regístrate</h3>
+        </div>
+
+        <div class="input-row">
+            <label for="nombre">Nombre:</label>
+            <input id="nombre" @bind="usuario.Nombre" class="form-control" />
+        </div>
+
+        <div class="input-row">
+            <label for="correo">Correo:</label>
+            <input id="correo" @bind="usuario.Email" class="form-control" />
+        </div>
+
+        <div class="input-row">
+            <label for="clave">Contraseña:</label>
+            <input type="password" id="clave" @bind="usuario.PasswordHash" class="form-control" />
+        </div>
+
+        <div class="input-row">
+            <button @onclick="RegistrarUsuario" class="btn btn-primary">Registrar</button>
+        </div>
+
+        <span>¿Ya tienes una cuenta? <a href="/">Inicia sesión</a></span>
+    </div>
+</div>
+
+@code {
+    private UsuarioDTO usuario = new UsuarioDTO();
+
+    private async Task RegistrarUsuario()
+    {
+        try
+        {
+            Console.WriteLine($"Nombre: {usuario.Nombre}, Email: {usuario.Email}, PasswordHash: {usuario.PasswordHash}");
+
+            usuario.RolId = 3;
+
+            var registerResponse = await httpClient.PostAsJsonAsync<UsuarioDTO>("/api/Usuario/Registro", usuario);
+
+            if (registerResponse.IsSuccessStatusCode)
+            {
+                navManager.NavigateTo("/");
+            }
+            else
+            {
+                var errorMessage = await registerResponse.Content.ReadAsStringAsync();
+                Console.WriteLine($"Error: {errorMessage}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al registrar el usuario: {ex.Message}");
+        }
+    }
+
+}

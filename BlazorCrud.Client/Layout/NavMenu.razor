@@ -2,7 +2,7 @@
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">Consultoria</a>
+        <a class="navbar-brand" href="">Gestión Consultoria</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -40,6 +40,11 @@
                         <span class="fas fa-tasks me-2" aria-hidden="true"></span> Tareas
                     </NavLink>
                 </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="recursos">
+                        <span class="fas fa-clipboard-list me-2" aria-hidden="true"></span> Recursos
+                    </NavLink>
+                </div>
             </Authorized>
         </AuthorizeView>
 
@@ -58,6 +63,11 @@
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="tareas">
                         <span class="fas fa-tasks me-2" aria-hidden="true"></span> Tareas
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="recursos">
+                        <span class="fas fa-clipboard-list me-2" aria-hidden="true"></span> Recursos
                     </NavLink>
                 </div>
             </Authorized>

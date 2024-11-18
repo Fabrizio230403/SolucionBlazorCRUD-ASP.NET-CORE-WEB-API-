@@ -18,6 +18,26 @@ builder.Services.AddScoped<IProyectoService, ProyectoService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IRolService, RolService>();
 builder.Services.AddScoped<ITareaService, TareaService>();
+builder.Services.AddScoped<IRecursoService, RecursoService>();
+builder.Services.AddScoped<IRolPermisoService, RolPermisoService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddSingleton<IEmailService, EmailService>();
+
+
+builder.Services.AddSingleton(new EmailSettings
+{
+    FromAddress = "dantetc987@gmail.com",
+    SmtpServer = "smtp.gmail.com",
+    SmtpPort = 587,
+    SmtpUser = "dantetc987@gmail.com",
+    SmtpPassword = "aoeirqurkqhvdsra"
+});
+
+Console.WriteLine("Email settings initialized: " +
+                  $"From: {builder.Services.BuildServiceProvider().GetRequiredService<EmailSettings>().FromAddress}, " +
+                  $"SMTP Server: {builder.Services.BuildServiceProvider().GetRequiredService<EmailSettings>().SmtpServer}, " +
+                  $"Port: {builder.Services.BuildServiceProvider().GetRequiredService<EmailSettings>().SmtpPort}");
+
 
 builder.Services.AddSweetAlert2();
 

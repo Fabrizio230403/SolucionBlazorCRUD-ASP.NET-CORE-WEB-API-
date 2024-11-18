@@ -7,6 +7,7 @@
 
 @inject SweetAlertService Swal;
 @inject ITareaService tareaService;
+@inject IEmailService emailService
 @inject NavigationManager navegacion;
 
 <h3>@titulo</h3>
@@ -78,6 +79,9 @@
         @btnTexto
     </button>
 
+    <button class="btn btn-success" @onclick="AsignarTarea">Asignar Tarea y Enviar Correo</button>
+
+
     <a class="btn btn-warning" href="tareas">Volver</a>
 </EditForm>
 
@@ -92,8 +96,54 @@
     List<ProyectoDTO> proyectos = new List<ProyectoDTO>();
     List<UsuarioDTO> usuarios = new List<UsuarioDTO>();
 
+    private async Task EnviarCorreo(string destinatario, string asunto, string mensaje)
+    {
+        Console.WriteLine($"Sending email to: {destinatario}, subject: {asunto}");
+
+        try
+        {
+            await emailService.SendEmailAsync(destinatario, asunto, mensaje);
+            Console.WriteLine($"Email sent to {destinatario}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in EnviarCorreo: {ex.Message}");
+        }
+    }
+
+    private async Task AsignarTarea()
+    {
+        Console.WriteLine("Assigning task...");
+
+        var usuarioAsignado = usuarios.FirstOrDefault(u => u.UsuarioId == tarea.UsuarioAsignadoID);
+        if (usuarioAsignado != null)
+        {
+            string destinatario = usuarioAsignado.Email;
+            string asunto = $"Nueva tarea asignada: {tarea.Nombre}";
+            string mensaje = $"Hola {usuarioAsignado.Nombre},<br/><br/>"
+                             + $"Se te ha asignado una nueva tarea.<br/>"
+                             + $"<b>Nombre:</b> {tarea.Nombre}<br/>"
+                             + $"<b>Descripción:</b> {tarea.Descripcion}<br/>"
+                             + $"<b>Fecha de inicio:</b> {tarea.FechaInicio}<br/>"
+                             + $"<b>Fecha de fin:</b> {tarea.FechaFin}<br/><br/>"
+                             + $"Por favor, revisa la tarea lo antes posible.";
+
+            Console.WriteLine("Calling EnviarCorreo...");
+            await EnviarCorreo(destinatario, asunto, mensaje);
+        }
+        else
+        {
+            Console.WriteLine("Error: No user found for assignment.");
+            await Swal.FireAsync("Error", "No se pudo asignar la tarea porque no se encontró el usuario asignado.", SweetAlertIcon.Error);
+        }
+    }
+
+
     protected override async Task OnInitializedAsync()
     {
+        if (proyectos == null) proyectos = new List<ProyectoDTO>();
+        if (usuarios == null) usuarios = new List<UsuarioDTO>();
+
 
         try { proyectos = await tareaService.ObtenerProyectos(); }
         catch (Exception ex) { await Swal.FireAsync("Error", $"No se pudieron cargar los proyectos: {ex.Message}", SweetAlertIcon.Error); }
@@ -112,6 +162,19 @@
             btnTexto = "Guardar Tarea";
             titulo = "Nueva Tarea";
         }
+
+
+        if (tareaService == null)
+        {
+            await Swal.FireAsync("Error", "El servicio de tareas no está disponible.", SweetAlertIcon.Error);
+            return;
+        }
+        if (emailService == null)
+        {
+            await Swal.FireAsync("Error", "El servicio de correo no está disponible.", SweetAlertIcon.Error);
+            return;
+        }
+
     }
 
     private async Task OnValidSubmit()
@@ -129,8 +192,16 @@
             idDevuelto = await tareaService.Editar(tarea);
 
         if (idDevuelto != 0)
+        {
+            await AsignarTarea();
             navegacion.NavigateTo("/tareas");
+        }
+        else
+        {
+            await Swal.FireAsync("Error", "No se pudo guardar o editar la tarea.", SweetAlertIcon.Error);
+        }
     }
+
 
     private bool EsPrioridadValida(string? prioridad)
     {

@@ -35,5 +35,9 @@ namespace BlazorCrud.Shared
 
         public int UsuarioAsignadoID { get; set; }
 
+        public UsuarioDTO? Usuario { get; set; }
+
+        public ProyectoDTO? Proyecto { get; set; }
+
     }
 }

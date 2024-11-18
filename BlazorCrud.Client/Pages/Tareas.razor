@@ -9,6 +9,9 @@
 
 @inject SweetAlertService Swal;
 @inject ITareaService tareaService;
+@inject IEmailService emailService;
+
+
 
 <h3>Tareas</h3>
 
@@ -47,8 +50,8 @@
                 <tr>
                     <td>@contador</td>
                     <td>@item.Nombre</td>
-                    <td>@item.ProyectoID</td>
-                    <td>@item.UsuarioAsignadoID</td>
+                    <td>@item.Proyecto!.Nombre</td>
+                    <td>@item.Usuario!.Nombre</td>
                     <td>@item.Descripcion</td>
                     <td>@item.FechaInicio?.ToString("dd/MM/yyyy")</td>
                     <td>@item.FechaFin?.ToString("dd/MM/yyyy")</td>

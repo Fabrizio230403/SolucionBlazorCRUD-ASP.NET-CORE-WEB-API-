@@ -1,5 +1,6 @@
 ﻿using BlazorCrud.Server.Models;
 using BlazorCrud.Shared;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,11 +8,11 @@ namespace BlazorCrud.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TareaController : ControllerBase
+    public class RecursoController : ControllerBase
     {
         private readonly SistemaConsultoriaContext _dbContext;
 
-        public TareaController(SistemaConsultoriaContext dbContext)
+        public RecursoController(SistemaConsultoriaContext dbContext)
         {
             _dbContext = dbContext;
         }
@@ -20,26 +21,25 @@ namespace BlazorCrud.Server.Controllers
         [Route("Lista")]
         public async Task<IActionResult> Lista()
         {
-            var responseApi = new ResponseAPI<List<TareaDTO>>();
-            var listaTareaDTO = new List<TareaDTO>();
+            var responseApi = new ResponseAPI<List<RecursoDTO>>();
+            var listaRecursoDTO = new List<RecursoDTO>();
 
             try
             {
-                foreach (var item in await _dbContext.Tareas.Include(t => t.Proyecto).Include(t => t.Usuario).ToListAsync())
+                foreach (var item in await _dbContext.Recursos.Include(p => p.Proyecto).Include(u => u.Usuario).ToListAsync())
                 {
-                    listaTareaDTO.Add(new TareaDTO
+                    listaRecursoDTO.Add(new RecursoDTO
                     {
-                        TareaID = item.TareaID,
+                        RecursoId = item.RecursoId,
+                        ProyectoId = item.ProyectoId,
+                        Tipo = item.Tipo,
                         Nombre = item.Nombre,
-                        ProyectoID = item.ProyectoID,
-                        Descripcion = item.Descripcion,
-                        FechaInicio = item.FechaInicio,
-                        FechaFin = item.FechaFin,
-                        Estado = item.Estado,
-                        UsuarioAsignadoID = item.UsuarioAsignadoID,
-                        Proyecto = item.Proyecto != null ? new ProyectoDTO
+                        Costo = item.Costo,
+                        TiempoAsignado = item.TiempoAsignado,
+                        UsuarioId = item.UsuarioId,
+                        Proyecto = new ProyectoDTO
                         {
-                            ProyectoID = item.Proyecto.ProyectoID,
+                            ProyectoID = item.Proyecto!.ProyectoID,
                             Nombre = item.Proyecto.Nombre,
                             Descripcion = item.Proyecto.Descripcion,
                             FechaInicio = item.Proyecto.FechaInicio,
@@ -48,28 +48,28 @@ namespace BlazorCrud.Server.Controllers
                             Estado = item.Proyecto.Estado,
                             GerenteID = item.Proyecto.GerenteID,
                             PorcentajeCompleto = item.Proyecto.PorcentajeCompleto,
-                        } : null,
-                        Usuario = item.Usuario != null ? new UsuarioDTO
+                        },
+                        Usuario = new UsuarioDTO
                         {
-                            UsuarioId = item.Usuario.UsuarioId,
+                            UsuarioId = item.Usuario!.UsuarioId,
                             Nombre = item.Usuario.Nombre,
                             Email = item.Usuario.Email,
                             PasswordHash = item.Usuario.PasswordHash,
                             RolId = item.Usuario.RolId,
                             FechaCreacion = item.Usuario.FechaCreacion,
-                        } : null
+                        }
+
                     });
                 }
 
-
                 responseApi.EsCorrecto = true;
-                responseApi.Valor = listaTareaDTO;
+                responseApi.Valor = listaRecursoDTO;
+
             }
             catch (Exception ex)
             {
                 responseApi.EsCorrecto = false;
                 responseApi.Mensaje = ex.Message;
-                Console.WriteLine(ex.InnerException?.Message ?? ex.Message);
             }
 
             return Ok(responseApi);
@@ -80,32 +80,32 @@ namespace BlazorCrud.Server.Controllers
         [Route("Buscar/{id}")]
         public async Task<IActionResult> Buscar(int id)
         {
-            var responseApi = new ResponseAPI<TareaDTO>();
-            var tareaDTO = new TareaDTO();
+            var responseApi = new ResponseAPI<RecursoDTO>();
+            var RecursoDTO = new RecursoDTO();
 
             try
             {
-                var dbTarea = await _dbContext.Tareas.FirstOrDefaultAsync(x => x.TareaID == id);
+                var dbRecurso = await _dbContext.Recursos.FirstOrDefaultAsync(x => x.RecursoId == id);
 
-                if (dbTarea != null)
+                if (dbRecurso != null)
                 {
-                    tareaDTO.TareaID = dbTarea.TareaID;
-                    tareaDTO.Nombre = dbTarea.Nombre;
-                    tareaDTO.Descripcion = dbTarea.Descripcion;
-                    tareaDTO.FechaInicio = dbTarea.FechaInicio;
-                    tareaDTO.FechaFin = dbTarea.FechaFin;
-                    tareaDTO.Estado = dbTarea.Estado;
-                    tareaDTO.ProyectoID = dbTarea.ProyectoID;
-                    tareaDTO.UsuarioAsignadoID = dbTarea.UsuarioAsignadoID;
+                    RecursoDTO.RecursoId = dbRecurso.RecursoId;
+                    RecursoDTO.ProyectoId = dbRecurso.ProyectoId;
+                    RecursoDTO.Nombre = dbRecurso.Nombre;
+                    RecursoDTO.Tipo = dbRecurso.Tipo;
+                    RecursoDTO.Costo = dbRecurso.Costo;
+                    RecursoDTO.TiempoAsignado = dbRecurso.TiempoAsignado;
+                    RecursoDTO.UsuarioId = dbRecurso.UsuarioId;
 
                     responseApi.EsCorrecto = true;
-                    responseApi.Valor = tareaDTO;
+                    responseApi.Valor = RecursoDTO;
                 }
                 else
                 {
                     responseApi.EsCorrecto = false;
                     responseApi.Mensaje = "No encontrado";
                 }
+
             }
             catch (Exception ex)
             {
@@ -115,73 +115,41 @@ namespace BlazorCrud.Server.Controllers
 
             return Ok(responseApi);
         }
-
-
 
         [HttpPost]
         [Route("Guardar")]
-        public async Task<IActionResult> Guardar(TareaDTO tarea)
+        public async Task<IActionResult> Guardar(RecursoDTO recurso)
         {
             var responseApi = new ResponseAPI<int>();
 
+
             try
             {
-                var dbTarea = new Tarea
+                var dbRecurso = new Recurso
                 {
-                    Nombre = tarea.Nombre,
-                    Descripcion = tarea.Descripcion,
-                    FechaInicio = tarea.FechaInicio,
-                    FechaFin = tarea.FechaFin,
-                    Estado = tarea.Estado,
-                    ProyectoID = tarea.ProyectoID,
-                    UsuarioAsignadoID = tarea.UsuarioAsignadoID,
-
+                    ProyectoId = recurso.ProyectoId,
+                    Nombre = recurso.Nombre,
+                    Tipo = recurso.Tipo,
+                    Costo = recurso.Costo,
+                    TiempoAsignado = recurso.TiempoAsignado,
+                    UsuarioId = recurso.UsuarioId,
                 };
 
-                _dbContext.Tareas.Add(dbTarea);
+                _dbContext.Recursos.Add(dbRecurso);
                 await _dbContext.SaveChangesAsync();
 
-                responseApi.EsCorrecto = true;
-                responseApi.Valor = dbTarea.TareaID;
-            }
-            catch (Exception ex)
-            {
-                responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-            }
-
-            return Ok(responseApi);
-        }
-
-
-        [HttpPut]
-        [Route("Editar/{id}")]
-        public async Task<IActionResult> Editar(TareaDTO tarea, int id)
-        {
-            var responseApi = new ResponseAPI<int>();
-            try
-            {
-                var dbTarea = await _dbContext.Tareas.FirstOrDefaultAsync(e => e.TareaID == id);
-
-                if (dbTarea != null)
+                if (dbRecurso.RecursoId != 0)
                 {
-                    dbTarea.Nombre = tarea.Nombre;
-                    dbTarea.Descripcion = tarea.Descripcion;
-                    dbTarea.FechaInicio = tarea.FechaInicio;
-                    dbTarea.FechaFin = tarea.FechaFin;
-                    dbTarea.Estado = tarea.Estado;
-
-                    _dbContext.Tareas.Update(dbTarea);
-                    await _dbContext.SaveChangesAsync();
-
                     responseApi.EsCorrecto = true;
-                    responseApi.Valor = dbTarea.TareaID;
+                    responseApi.Valor = dbRecurso.RecursoId;
                 }
                 else
                 {
                     responseApi.EsCorrecto = false;
-                    responseApi.Mensaje = "Tarea no encontrada";
+                    responseApi.Mensaje = "No guardado";
                 }
+
+
             }
             catch (Exception ex)
             {
@@ -191,19 +159,69 @@ namespace BlazorCrud.Server.Controllers
 
             return Ok(responseApi);
         }
+
+        [HttpPut]
+        [Route("Editar/{id}")]
+        public async Task<IActionResult> Editar(RecursoDTO recurso, int id)
+        {
+            var responseApi = new ResponseAPI<int>();
+
+
+            try
+            {
+
+                var dbRecurso = await _dbContext.Recursos.FirstOrDefaultAsync(e => e.RecursoId == id);
+
+
+                if (dbRecurso != null)
+                {
+
+                    dbRecurso.ProyectoId = recurso.ProyectoId;
+                    dbRecurso.Nombre = recurso.Nombre;
+                    dbRecurso.Tipo = recurso.Tipo;
+                    dbRecurso.Costo = recurso.Costo;
+                    dbRecurso.TiempoAsignado = recurso.TiempoAsignado;
+                    dbRecurso.UsuarioId = recurso.UsuarioId;
+
+                    _dbContext.Recursos.Update(dbRecurso);
+                    await _dbContext.SaveChangesAsync();
+
+                    responseApi.EsCorrecto = true;
+                    responseApi.Valor = dbRecurso.RecursoId;
+
+                }
+                else
+                {
+                    responseApi.EsCorrecto = false;
+                    responseApi.Mensaje = "Recurso no encontrado";
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                responseApi.EsCorrecto = false;
+                responseApi.Mensaje = ex.Message;
+            }
+
+            return Ok(responseApi);
+        }
+
 
         [HttpDelete]
         [Route("Eliminar/{id}")]
         public async Task<IActionResult> Eliminar(int id)
         {
             var responseApi = new ResponseAPI<int>();
+
             try
             {
-                var dbTarea = await _dbContext.Tareas.FirstOrDefaultAsync(e => e.TareaID == id);
+                var dbRecurso = await _dbContext.Recursos.FirstOrDefaultAsync(e => e.RecursoId == id);
 
-                if (dbTarea != null)
+
+                if (dbRecurso != null)
                 {
-                    _dbContext.Tareas.Remove(dbTarea);
+                    _dbContext.Recursos.Remove(dbRecurso);
                     await _dbContext.SaveChangesAsync();
 
                     responseApi.EsCorrecto = true;
@@ -211,7 +229,7 @@ namespace BlazorCrud.Server.Controllers
                 else
                 {
                     responseApi.EsCorrecto = false;
-                    responseApi.Mensaje = "Tarea no encontrada";
+                    responseApi.Mensaje = "Recurso no encontrado";
                 }
             }
             catch (Exception ex)
@@ -222,9 +240,6 @@ namespace BlazorCrud.Server.Controllers
 
             return Ok(responseApi);
         }
-
-
-
 
     }
 }

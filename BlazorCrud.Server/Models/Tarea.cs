@@ -10,6 +10,6 @@ public partial class Tarea
     public DateOnly? FechaFin { get; set; }
     public string? Estado { get; set; }
     public int UsuarioAsignadoID { get; set; }
+    public virtual Usuario? Usuario { get; set; }
     public virtual Proyecto? Proyecto { get; set; }
-    public virtual Usuario? UsuarioAsignado { get; set; }
 }

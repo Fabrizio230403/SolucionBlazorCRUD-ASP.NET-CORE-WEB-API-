@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using BlazorCrud.Shared;
 using BlazorCrud.Server.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
+using System.Security.Cryptography;
 
 namespace BlazorCrud.Server.Controllers
 {
@@ -13,40 +15,49 @@ namespace BlazorCrud.Server.Controllers
 
         private readonly SistemaConsultoriaContext _context;
 
-        // Inyección del contexto de base de datos
         public UsuarioController(SistemaConsultoriaContext context)
         {
             _context = context;
         }
 
-        /*[HttpPost]
-        [Route("Login")]
-        public async Task<IActionResult> Login([FromBody] LoginDTO login)
+        [HttpPost("Registro")]
+        public async Task<IActionResult> Registro([FromBody] UsuarioDTO usuarioDTO)
         {
-            SesionDTO sesionDTO = new SesionDTO();
-            if (login.Correo == "admin@gmail.com" && login.Clave == "admin")
+            if (usuarioDTO == null || string.IsNullOrEmpty(usuarioDTO.Email) || string.IsNullOrEmpty(usuarioDTO.PasswordHash) || usuarioDTO.RolId == 0)
             {
-                sesionDTO.Nombre = "admin";
-                sesionDTO.Correo = login.Correo;
-                sesionDTO.Rol =  "Administrador";
+                return BadRequest("Los datos del usuario no son válidos.");
+            }
 
-            }
-            else
+            var existingUser = await _context.Usuarios
+                .FirstOrDefaultAsync(u => u.Email == usuarioDTO.Email);
+            if (existingUser != null)
             {
-                sesionDTO.Nombre = "empleado";
-                sesionDTO.Correo = login.Correo;
-                sesionDTO.Rol = "Empleado";
+                return Conflict("El correo electrónico ya está en uso.");
             }
-            return StatusCode(StatusCodes.Status200OK, sesionDTO);
-        }*/
+
+            var usuario = new Usuario
+            {
+                Nombre = usuarioDTO.Nombre,
+                Email = usuarioDTO.Email,
+                PasswordHash = HashPassword(usuarioDTO.PasswordHash),
+                RolId = usuarioDTO.RolId,
+                FechaCreacion = DateTime.UtcNow
+            };
+
+            _context.Usuarios.Add(usuario);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { Message = "Usuario registrado exitosamente" });
+        }
 
         [HttpPost]
         [Route("Login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO login)
         {
-            // Busca en la base de datos el usuario que coincide con el correo y la clave (PasswordHash)
+            var passwordHash = HashPassword(login.Clave);
+
             var usuario = await _context.Usuarios
-                .Where(u => u.Email == login.Correo && u.PasswordHash == login.Clave)
+                .Where(u => u.Email == login.Correo && u.PasswordHash == passwordHash)
                 .Select(u => new UsuarioDTO
                 {
                     UsuarioId = u.UsuarioId,
@@ -56,7 +67,7 @@ namespace BlazorCrud.Server.Controllers
                     FechaCreacion = u.FechaCreacion,
                     Rol = new RolDTO
                     {
-                        RolId = u.Rol.RolId,
+                        RolId = u.Rol!.RolId,
                         Nombre = u.Rol.Nombre
                     }
                 })
@@ -64,11 +75,9 @@ namespace BlazorCrud.Server.Controllers
 
             if (usuario == null)
             {
-                // Retorna un código 401 si las credenciales son incorrectas
                 return StatusCode(StatusCodes.Status401Unauthorized, "Usuario o clave incorrectos");
             }
 
-            // Crear el DTO de sesión usando los datos del usuario encontrado
             SesionDTO sesionDTO = new SesionDTO
             {
                 Nombre = usuario.Nombre,
@@ -76,8 +85,24 @@ namespace BlazorCrud.Server.Controllers
                 Rol = usuario.Rol?.Nombre ?? "Sin Rol"
             };
 
-            // Retorna la sesión con el código de éxito
             return StatusCode(StatusCodes.Status200OK, sesionDTO);
         }
+
+
+        private string HashPassword(string password)
+        {
+            using (var sha256 = SHA256.Create())
+            {
+                byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                return Convert.ToBase64String(hashBytes);
+            }
+        }
+
+        private bool IsPasswordEncrypted(string passwordHash)
+        {
+            return passwordHash.Length == 44;
+        }
+
+
     }
 }

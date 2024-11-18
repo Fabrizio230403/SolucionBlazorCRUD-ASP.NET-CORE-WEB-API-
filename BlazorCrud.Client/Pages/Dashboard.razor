@@ -9,10 +9,12 @@
 @using CurrieTechnologies.Razor.SweetAlert2;
 @using BlazorCrud.Client.Services;
 @using ChartJs.Blazor.BarChart;
+@using ChartJs.Blazor.PieChart;
 @using ChartJs.Blazor.Util;
 
 @inject SweetAlertService Swal;
 @inject IProyectoService proyectoService;
+@inject ITareaService tareaService;
 
 <h3>Dashboard</h3>
 
@@ -26,23 +28,36 @@ else if (listaProyecto.Count == 0)
 }
 else
 {
-    <Chart Config="@_configuracionBarras"></Chart>
+    <div style="display: flex;">
+        <div style="width: 60%;">
+            <Chart Config="@_configuracionBarras"></Chart>
+        </div>
+        <div style="width: 40%;">
+            <Chart Config="@_configuracionPie"></Chart>
+        </div>
+    </div>
 }
 
 @code {
     List<ProyectoDTO>? listaProyecto = null;
+    List<TareaDTO>? listaTarea = null;
+
     private BarConfig _configuracionBarras;
+    private PieConfig _configuracionPie;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             listaProyecto = await proyectoService.Lista();
+            listaTarea = await tareaService.Lista();
+
             ConfigurarGraficoBarras();
+            ConfigurarGraficoAnillo();
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error al cargar proyectos: {ex.Message}");
+            Console.Error.WriteLine($"Error al cargar datos: {ex.Message}");
         }
     }
 
@@ -85,42 +100,89 @@ else
         _configuracionBarras.Data.Datasets.Add(dataset);
     }
 
-    private async Task Eliminar(int id)
+    // private async Task Eliminar(int id)
+    // {
+    //     var resultado = await Swal.FireAsync(new SweetAlertOptions
+    //         {
+    //             Title = "Eliminar Proyecto",
+    //             Text = "Deseas eliminar el proyecto?",
+    //             Icon = SweetAlertIcon.Question,
+    //             ShowCancelButton = true
+    //         });
+
+    //     if (resultado.IsConfirmed)
+    //     {
+    //         var eliminado = await proyectoService.Eliminar(id);
+
+    //         if (eliminado)
+    //         {
+    //             listaProyecto = listaProyecto!.FindAll(e => e.ProyectoID != id);
+    //             ConfigurarGraficoBarras();
+    //         }
+    //     }
+    // }
+
+    private void ConfigurarGraficoAnillo()
     {
-        var resultado = await Swal.FireAsync(new SweetAlertOptions
-            {
-                Title = "Eliminar Proyecto",
-                Text = "Deseas eliminar el proyecto?",
-                Icon = SweetAlertIcon.Question,
-                ShowCancelButton = true
-            });
-
-        if (resultado.IsConfirmed)
+        if (listaTarea == null || listaTarea.Count == 0)
         {
-            var eliminado = await proyectoService.Eliminar(id);
-
-            if (eliminado)
-            {
-                listaProyecto = listaProyecto!.FindAll(e => e.ProyectoID != id);
-                ConfigurarGraficoBarras();
-            }
+            return;
         }
-    }
 
-    private string ObtenerWidthPorcentaje(decimal? porcentaje)
-    {
-        if (porcentaje == null) return "0%";
-        int porcentajeEntero = (int)Math.Round(porcentaje.Value);
-
-        return porcentajeEntero switch
+        var totalTareas = listaTarea.Count;
+        var estados = new[] { "E", "P", "C" };
+        var colores = new[]
         {
-            0 => "0%",
-            <= 10 => $"{porcentajeEntero + 5}%",
-            <= 30 => $"{porcentajeEntero + 5}%",
-            <= 50 => $"{porcentajeEntero}%",
-            <= 70 => $"{porcentajeEntero}%",
-            <= 90 => $"{porcentajeEntero + 3}%",
-            _ => $"{porcentajeEntero}%"
+            ColorUtil.ColorHexString(40, 167, 69), // Verde para Completado
+            ColorUtil.ColorHexString(255, 193, 7), // Amarillo para En Progreso
+            ColorUtil.ColorHexString(0, 123, 255) // Azul para Planeado
         };
+        var dataset = new PieDataset<decimal>
+            {
+                BackgroundColor = colores
+            };
+
+        foreach (var estado in estados)
+        {
+            var count = listaTarea.Count(t => t.Estado == estado);
+            var porcentaje = Math.Round((decimal)count / totalTareas * 100, 2);
+            dataset.Add(porcentaje);
+        }
+
+        _configuracionPie = new PieConfig
+            {
+                Options = new PieOptions
+                {
+                    Responsive = true,
+                    Title = new OptionsTitle
+                    {
+                        Display = true,
+                        Text = "Estado de Tareas (%)"
+                    }
+                }
+            };
+
+        foreach (var estado in estados)
+        {
+            _configuracionPie.Data.Labels.Add(estado);
+        }
+        _configuracionPie.Data.Datasets.Add(dataset);
     }
+
+    // private string ObtenerWidthPorcentaje(decimal? porcentaje)
+    // {
+    //     if (porcentaje == null) return "0%";
+    //     int porcentajeEntero = (int)Math.Round(porcentaje.Value);
+
+    //     return porcentajeEntero switch
+    //     {
+    //         0 => "0%",
+    //         <= 10 => $"{porcentajeEntero + 5}%",
+    //         <= 30 => $"{porcentajeEntero + 5}%",
+    //         <= 50 => $"{porcentajeEntero}%",
+    //         <= 70 => $"{porcentajeEntero}%",
+    //         <= 90 => $"{porcentajeEntero + 3}%",
+    //         _ => $"{porcentajeEntero}%"
+    //     };
+    // }
 }

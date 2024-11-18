@@ -1,0 +1,102 @@
+﻿@page "/recursos"
+@using Microsoft.AspNetCore.Authorization;
+@attribute [Authorize(Roles = "Administrador,Gerente de Proyecto")]
+
+@using BlazorCrud.Shared;
+@using CurrieTechnologies.Razor.SweetAlert2;
+@using BlazorCrud.Client.Services;
+
+@inject SweetAlertService Swal;
+@inject IRecursoService recursoService;
+
+<h3>Recursos</h3>
+
+<a class="btn btn-success btn-sm mb-3" href="recurso">Nuevo Recurso</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Proyecto</th>
+            <th>Nombre</th>
+            <th>Tipo de Recurso</th>
+            <th>Costo</th>
+            <th>Tiempo Asignado</th>
+            <th>Usuario</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @if (listaRecurso == null)
+        {
+            <tr>
+                <td colspan="11" align="center">
+                    <img style="width:50px" src="https://media.tenor.com/On7kvXhzmI4AAAAj/loading-gif.gif" />
+                </td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var item in listaRecurso)
+            {
+                <tr>
+                    <td>@item.RecursoId</td>
+                    <td>@item.Proyecto!.Nombre</td>
+                    <td>@item.Nombre</td>
+                    <td>@ObtenerTipoRecurso(item.Tipo)</td>
+                    <td>@item.Costo</td>
+                    <td>@item.TiempoAsignado</td>
+                    <td>@item.Usuario!.Nombre</td>
+                    <td>
+                        <a class="btn btn-primary btn-sm" href="recurso/@item.RecursoId">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <button type="button" class="btn btn-danger btn-sm" @onclick="(() => Eliminar(item.RecursoId))">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+
+@code {
+    List<RecursoDTO>? listaRecurso = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        listaRecurso = await recursoService.Lista();
+    }
+
+    private async Task Eliminar(int id)
+    {
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Eliminar Recurso",
+                Text = "Deseas eliminar el recurso?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true
+            });
+
+        if (resultado.IsConfirmed)
+        {
+            var eliminado = await recursoService.Eliminar(id);
+
+            if (eliminado)
+                listaRecurso = listaRecurso!.FindAll(e => e.RecursoId != id);
+        }
+    }
+
+    private string ObtenerTipoRecurso(string? tipo)
+    {
+        return tipo switch
+        {
+            "H" => "Humano",
+            "M" => "Material",
+            _ => "Desconocido"
+        };
+    }
+}
