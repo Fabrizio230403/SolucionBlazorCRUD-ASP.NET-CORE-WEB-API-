@@ -14,7 +14,7 @@ namespace BlazorCrud.Client.Extensiones
 
         public AutenticacionExtension(ISessionStorageService sessionStorage)
         {
-            _sessionStorage = sessionStorage;           
+            _sessionStorage = sessionStorage;
         }
 
         public async Task ActualizarEstadoAutenticacion(SesionDTO? sesionUsuario)
@@ -48,7 +48,7 @@ namespace BlazorCrud.Client.Extensiones
 
             if (sesionUsuario == null)
                 return await Task.FromResult(new AuthenticationState(_sinInformacion));
-            
+
             var claimPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, sesionUsuario.Nombre),

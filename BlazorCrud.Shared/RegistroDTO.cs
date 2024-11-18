@@ -12,5 +12,7 @@ namespace BlazorCrud.Shared
         public string Correo { get; set; }
         public string Clave { get; set; }
         public int RolId { get; set; }
+        public string ConfirmarClave { get; set; } // Agregar esta propiedad
+
     }
 }

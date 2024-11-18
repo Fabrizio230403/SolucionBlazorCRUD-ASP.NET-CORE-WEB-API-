@@ -17,6 +17,10 @@ public partial class Usuario
 
     public DateTime? FechaCreacion { get; set; }
 
+    public string? TokenRecuperacion { get; set; }
+
+    public DateTime? FechaExpiracionToken { get; set; }
+
     public virtual ICollection<Notificacione> Notificaciones { get; set; } = new List<Notificacione>();
 
     public virtual ICollection<Proyecto> Proyectos { get; set; } = new List<Proyecto>();

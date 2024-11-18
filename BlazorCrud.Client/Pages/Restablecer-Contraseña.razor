@@ -1,0 +1,139 @@
+﻿ @page "/restablecer-contraseña"
+@layout LoginLayout
+
+@inject HttpClient HttpClient
+@using CurrieTechnologies.Razor.SweetAlert2
+@inject NavigationManager NavManager
+@inject SweetAlertService Swal
+
+<style>
+    body {
+        background-image: url('/images/consultorias.jpg'); /* Imagen de fondo */
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        height: 100vh;
+    }
+
+    .reset-container {
+        background-color: rgba(255, 255, 255, 0.8); /* Fondo translúcido */
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .card {
+        border-radius: 8px;
+        border: none;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+
+    .form-label {
+        font-weight: bold;
+    }
+
+    .form-control {
+        border-radius: 5px;
+        box-shadow: none;
+        font-size: 1rem;
+    }
+
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+    .reset-container .card-body {
+        padding: 30px;
+    }
+
+    .text-center {
+        font-size: 0.980rem;
+    }
+</style>
+
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+    <div class="reset-container col-md-6 col-lg-4 shadow-lg">
+        <div class="card-body">
+            <div class="text-center mb-4">
+                <h3 class="h4 text-primary">Restablecer Contraseña</h3>
+                <p>Ingresa tu nueva contraseña y confírmala.</p>
+            </div>
+
+            <!-- Formulario de restablecimiento de contraseña -->
+            <div class="mb-3">
+                <label for="nuevaClave" class="form-label">Nueva Contraseña</label>
+                <input @bind="nuevaClave" type="password" id="nuevaClave" class="form-control" placeholder="Ingresa nueva contraseña" required />
+            </div>
+
+            <div class="mb-3">
+                <label for="confirmarClave" class="form-label">Confirmar Contraseña</label>
+                <input @bind="confirmarClave" type="password" id="confirmarClave" class="form-control" placeholder="Confirma tu nueva contraseña" required />
+            </div>
+
+            <div class="d-grid gap-2">
+                <button @onclick="RestablecerContraseña" class="btn btn-primary">Restablecer Contraseña</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string? nuevaClave;
+    private string? confirmarClave;
+    private string? token;
+
+    protected override void OnInitialized()
+    {
+        // Extrae el token de la URL
+        var uri = NavManager.Uri;
+        var queryParameters = new Uri(uri).Query;
+        var tokenParam = System.Web.HttpUtility.ParseQueryString(queryParameters).Get("token");
+
+        if (!string.IsNullOrEmpty(tokenParam))
+        {
+            token = tokenParam; // Guarda el token extraído de la URL
+        }
+        else
+        {
+            // Si no hay token
+            NavManager.NavigateTo("/");
+        }
+    }
+
+    private async Task RestablecerContraseña()
+    {
+        if (nuevaClave != confirmarClave)
+        {
+            await Swal.FireAsync("Error", "Las contraseñas no coinciden. Por favor, intenta nuevamente.", SweetAlertIcon.Error);
+            return;
+        }
+
+        if (string.IsNullOrEmpty(token))
+        {
+            await Swal.FireAsync("Error", "El token es inválido.", SweetAlertIcon.Error);
+            return;
+        }
+
+        var response = await HttpClient.PostAsJsonAsync("/api/Usuario/RestablecerContraseña", new { Token = token, NuevaClave = nuevaClave });
+
+        if (response.IsSuccessStatusCode)
+        {
+            await Swal.FireAsync("Contraseña Restablecida", "Tu contraseña ha sido restablecida con éxito. Ahora puedes iniciar sesión con tu nueva contraseña.", SweetAlertIcon.Success);
+            NavManager.NavigateTo("/");  
+        }
+        else
+        {
+            await Swal.FireAsync("Error", "No pudimos restablecer la contraseña. Intenta nuevamente.", SweetAlertIcon.Error);
+        }
+    }
+}

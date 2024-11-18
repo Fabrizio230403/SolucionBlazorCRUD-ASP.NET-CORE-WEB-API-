@@ -4,35 +4,171 @@
 @inject HttpClient httpClient
 @using BlazorCrud.Client.Extensiones
 @using BlazorCrud.Shared
+@using CurrieTechnologies.Razor.SweetAlert2;
 @using Microsoft.AspNetCore.Components.Authorization
 @inject AuthenticationStateProvider autenticacionProvider
 @inject NavigationManager navManager
+@inject SweetAlertService Swal;
 
- 
+<style>
+    body {
+        background-image: url('/images/consultorias.jpg');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        height: 100vh;
+    }
 
-<div class="row mt-5"> 
-    <div class="col-lg-4 offset-lg-4">
-        <div class="mb-3 text-center">
-            <h3>LOGIN</h3>
+    .login-container {
+        background-color: rgba(255, 255, 255, 0.8);
+        padding: 40px;
+        border-radius: 10px;
+    }
+
+    .card {
+        border-radius: 8px;
+        border: none;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+
+    .text-primary {
+        color: #007bff !important;
+    }
+    .text-center{
+        font-size: 0.980rem;
+    }
+
+    .form-label {
+        font-weight: bold;
+    }
+
+    .form-text {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    .forgot-password {
+        font-size: 0.925rem;
+        color: black;
+    }
+
+    .forgot-password a {
+        color: #007bff;
+        text-decoration: none;
+    }
+
+     .forgot-password a:hover {
+        text-decoration: underline;
+     }
+
+    /* Estilos para los botones de login con Google, Facebook y GitHub */
+    .social-login-btns {
+        display: flex;
+        justify-content: center; /* Centra los botones */
+        margin-top: 20px;
+        gap: 30px; /* Espacio intermedio entre los botones */
+    }
+
+    .social-btn {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 1px solid #ddd;
+        cursor: pointer;
+        transition: transform 0.3s;
+    }
+
+        /* Efecto de hover */
+        .social-btn:hover {
+            transform: scale(1.1);
+        }
+
+    /* Colores específicos para cada plataforma */
+    .google-btn {
+        background-color: #db4437; /* Rojo de Google */
+    }
+
+    .facebook-btn {
+        background-color: #3b5998; /* Azul de Facebook */
+    }
+
+    .github-btn {
+        background-color: #333; /* Negro de GitHub */
+    }
+
+    /* Aseguramos que los íconos sean blancos para destacar sobre los botones */
+    .social-btn i {
+        color: white;
+    }
+</style>
+
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+    <div class="login-container col-md-6 col-lg-4 shadow-lg">
+        <div class="card-body">
+            <div class="text-center mb-4">
+                <h3 class="h4 text-primary">Iniciar Sesión</h3>
+            </div>
+
+
+            <!-- Formulario de inicio de sesión -->
+            <div class="mb-3">
+                <label for="correo" class="form-label">Correo</label>
+                <input @bind="login.Correo" type="email" id="correo" class="form-control" placeholder="Ingresa tu correo" required />
+            </div>
+
+            <div class="mb-3">
+                <label for="clave" class="form-label">Contraseña</label>
+                <input @bind="login.Clave" type="password" id="clave" class="form-control" placeholder="Ingresa tu contraseña" required />
+            </div>
+
+            <!-- Enlace de recuperar contraseña -->
+            <div class="mb-3 forgot-password text-end">
+                <span>¿Has olvidado tu contraseña? </span>
+                <a href="/recuperar-contraseña">Restablecer aquí.</a>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button @onclick="IniciarSesion" class="btn btn-primary">Iniciar sesión</button>
+            </div>
+
+            <!-- Enlace para redirigir a la página de registro -->
+            <div class="text-center mt-3">
+                <p class="mb-0">¿No tienes una cuenta? <a href="/registro" class="link-primary">Regístrate aquí</a></p>
+            </div>
+
+
+            <!-- Botones de login con Google, Facebook, GitHub -->
+            <div class="social-login-btns">
+                <!-- Google -->
+                <button href="javascript:void(0)" class="social-btn google-btn">
+                    <i class="fab fa-google text-white"></i> <!-- Google Icon -->
+                </button>
+                <!-- Facebook -->
+                <button href="javascript:void(0)" class="social-btn facebook-btn">
+                    <i class="fab fa-facebook-f text-white"></i> <!-- Facebook Icon -->
+                </button>
+                <!-- GitHub -->
+                <button href="javascript:void(0)" class="social-btn github-btn">
+                    <i class="fab fa-github text-white"></i> <!-- GitHub Icon -->
+                </button>
+            </div>
         </div>
-
-        <div class="mb-3">
-            <label>Correo</label>
-            <input @bind="login.Correo" class="form-control"/>
-        </div>
-
-        <div class="mb-3">
-            <label>Contraseña</label>
-            <input @bind="login.Clave" class="form-control"  />
-        </div>
-
-        <div class="mb-3">
-             <button @onclick="IniciarSesion" class="btn btn-primary">Login</button>
-        </div>
-
-
     </div>
 </div>
+
+
 
 @code {
     private LoginDTO login = new LoginDTO();
@@ -51,7 +187,7 @@
                     {
                         Nombre = responseContent.Usuario.Nombre,
                         Correo = responseContent.Usuario.Email,
-                        Rol = responseContent.Usuario.Rol?.Nombre,
+                        Rol = responseContent.Usuario.Rol!.Nombre,
                         Token = responseContent.Token
                     };
 
@@ -59,14 +195,17 @@
                 var autenticacionExt = (AutenticacionExtension)autenticacionProvider;
                 await autenticacionExt.ActualizarEstadoAutenticacion(sesionUsuario);
 
+                // Muestra un mensaje de bienvenida
+                await Swal.FireAsync("Bienvenido", $"¡Hola {sesionUsuario.Nombre}! Has iniciado sesión correctamente.", SweetAlertIcon.Success);
+
                 // Redirige al home o a la página principal
                 navManager.NavigateTo("/Home");
             }
         }
         else
         {
-            // Manejo de error: usuario o clave incorrectos
-            // Podrías agregar algún mensaje de error visual
+            // Aquí se usa SweetAlert para mostrar el mensaje de error
+            await Swal.FireAsync("Error", "Usuario o clave incorrectos. Intenta nuevamente.", SweetAlertIcon.Error);
         }
     }
 }

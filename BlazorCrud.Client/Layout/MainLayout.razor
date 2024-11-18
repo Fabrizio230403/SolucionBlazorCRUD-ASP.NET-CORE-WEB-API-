@@ -4,6 +4,11 @@
 @using Microsoft.AspNetCore.Components.Authorization;
 @inject AuthenticationStateProvider autenticacionProvider
 @inject NavigationManager navManager
+@using Microsoft.AspNetCore.Authorization;
+@using BlazorCrud.Client.Services;
+@using BlazorCrud.Shared;
+
+@attribute [Authorize]
 
 <div class="page">
     <div class="sidebar">
@@ -11,9 +16,47 @@
     </div>
 
     <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-            <a @onclick="CerrarSesion" href="javascript:void(0)">Cerrar Sesión</a>
+        <div class="top-row px-4 d-flex align-items-center justify-content-end">
+            <!-- Icono de Notificaciones -->
+            <div class="dropdown">
+                <button class="btn btn-light dropdown-toggle" type="button" id="notificacionesMenu" data-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-bell"></i> <!-- Ícono de campana -->
+                </button>
+                <div class="dropdown-menu" aria-labelledby="notificacionesMenu">
+                    <span class="dropdown-item-text">Tarea asignada: Crear reporte</span>
+                    <span class="dropdown-item-text">Nueva actualización disponible</span>
+                    <span class="dropdown-item-text">Revisión requerida</span>
+                </div>
+            </div>
+
+            <!-- Icono de Mensajes -->
+            <div class="dropdown ms-3">
+                <button class="btn btn-light dropdown-toggle" type="button" id="mensajesMenu" data-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-envelope"></i> <!-- Ícono de mensaje -->
+                </button>
+                <div class="dropdown-menu" aria-labelledby="mensajesMenu">
+                    <span class="dropdown-item-text">Mensaje de Dante Toribio</span>
+                    <span class="dropdown-item-text">Consulta de Fabrizio Jurado</span>
+                    <span class="dropdown-item-text">Aviso de Joan Pérez</span>
+                </div>
+            </div>
+
+            <AuthorizeView>
+                <Authorized>
+            <!-- Icono de Usuario -->
+            <div class="dropdown ms-3">
+                <button class="btn btn-light dropdown-toggle d-flex align-items-center" type="button" id="usuarioMenu" data-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-user me-2"></i> <!-- Ícono de usuario -->
+                    <span>@context.User.Identity!.Name</span> <!-- Nombre del usuario -->
+                </button>
+                <div class="dropdown-menu" aria-labelledby="usuarioMenu">
+                    <li><button class="dropdown-item" href="/configuracion"><i class="fas fa-cogs me-2"></i>Configuración</button></li>
+                    <li><button class="dropdown-item" @onclick="CerrarSesion"><i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión</button></li>
+        </div>
+            </div>
+                </Authorized>
+            </AuthorizeView>
+
         </div>
 
         <article class="content px-4">

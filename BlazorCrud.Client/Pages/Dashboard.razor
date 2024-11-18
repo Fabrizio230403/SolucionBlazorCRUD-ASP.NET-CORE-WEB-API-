@@ -1,0 +1,690 @@
+﻿ @page "/dashboard"
+
+@using Microsoft.AspNetCore.Authorization;
+@attribute [Authorize(Roles = "Administrador,Gerente de Proyecto")]
+
+@using BlazorCrud.Shared;
+@using CurrieTechnologies.Razor.SweetAlert2;
+@using BlazorCrud.Client.Services;
+@using ChartJs.Blazor.BarChart;
+@using ChartJs.Blazor.Util;
+
+@inject SweetAlertService Swal;
+@inject IJSRuntime JSRuntime
+@inject IProyectoService proyectoService;
+@inject ITareaService tareaService;
+@inject IUsuarioService usuarioService;
+
+<style>
+    /*Estilos para las KPI*/
+
+    .dashboard-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    .kpi-card {
+        border: 1px solid #ddd;
+        padding: 20px;
+        text-align: center;
+        border-radius: 8px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+    }
+
+        .kpi-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0px 8px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .kpi-card h4 {
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: #007bff;  
+        }
+
+        .kpi-card p {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+    
+    .kpi-icon {
+        font-size: 24px;
+        color: #007bff;
+        margin-bottom: 10px;
+    }
+
+     
+    .ranking-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+        .ranking-list li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+            font-size: 16px;
+        }
+
+    .ranking-icon {
+        font-size: 24px;
+        margin-right: 10px;
+    }
+
+    .ranking-name {
+        flex: 1;
+        font-weight: bold;
+        text-transform: capitalize;
+        color: #333;
+    }
+
+    .ranking-score {
+        color: #555;
+    }
+
+    ul {
+        list-style: none;
+        padding: 0;
+    }
+
+        ul li {
+            text-align: left;
+            margin: 5px 0;
+        }
+
+    .charts-row {
+        display: flex;
+        gap: 120px;
+        flex-wrap: wrap;  
+    }
+
+    .chart-container {
+        flex: 1;
+        margin: 10px;
+        padding: 20px;
+
+    }
+
+    .kpi-card {
+        border: 1px solid #ddd;
+        padding: 20px;
+        margin: 10px;
+        text-align: center;
+        border-radius: 8px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .table-container {
+        margin-top: 20px;
+        width: 100%;
+    }
+
+    #proyectosPorEstado {
+        max-width: 250px;
+        max-height: 250px;
+    }
+
+    #proyectosPorPrioridad {
+        max-width: 250px;
+        max-height: 250px;
+    }
+
+    .table-container {
+        margin-top: 20px;
+        width: 100%;
+    }
+
+    .priority-icon {
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    .user-circle {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: #ddd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+    }
+
+    .table td select {
+        width: 100px;
+        padding: 5px;
+        border-radius: 4px;
+    }
+
+        .table td select:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+    .initials-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 16px;
+    }
+
+     
+    .custom-select option {
+        background-color: #f0f0f0;  
+        color: #6c757d;  
+    }
+    .input-group{
+       max-width:30%;
+    }
+
+    
+</style>
+
+<h3>Dashboard</h3>
+
+@if (listaProyecto == null)
+{
+    <p>Cargando proyectos...</p>
+}
+else if (listaProyecto.Count == 0)
+{
+    <p>No hay proyectos disponibles para mostrar.</p>
+}
+else
+{
+
+    <!-- KPIs -->
+    <div class="dashboard-container">
+        <div class="kpi-card">
+            <div class="kpi-icon">📋</div>
+            <h4>Total de Proyectos</h4>
+            <p>@listaProyecto.Count</p>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon">🚀</div>
+            <h4>Tareas En Progreso</h4>
+            <p>@(listaTarea?.Count(t => t.Estado == "E") ?? 0)</p>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon">✅</div>
+            <h4>Tareas Completadas</h4>
+            <p>@(listaTarea?.Count(t => t.Estado == "C") ?? 0)</p>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon">⏳</div>
+            <h4>Tareas Pendientes</h4>
+            <p>@(listaTarea?.Count(t => t.Estado == "P") ?? 0)</p>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon">🏆</div>
+            <h4>Proyectos Completados</h4>
+            <p>@(listaProyecto?.Count(p => p.Estado == "C") ?? 0)</p>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon">👥</div>
+            <h4>Miembros Asignados a Tareas</h4>
+            <p>@(listaTarea?.Select(t => t.Usuario).Distinct().Count() ?? 0)</p>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon">📈</div>
+            <h4>Proyectos Completados (%)</h4>
+            <p>@((listaProyecto?.Count(p => p.Estado == "C") ?? 0) * 100 / (listaProyecto?.Count() ?? 1)) %</p>
+        </div>
+
+        <!-- Ranking de Usuarios con Tareas Asignadas -->
+        <div class="kpi-card">
+            <h4>Ranking de Usuarios</h4>
+            <ul class="ranking-list">
+                @{
+                    
+                    var iconosRanking = new[] { "🥇", "🥈", "🥉" };
+                    int rank = 0; 
+                }
+
+                @foreach (var usuario in listaUsuario!
+               .OrderByDescending(u => listaTarea!.Count(t => t.Usuario!.Nombre == u.Nombre))
+               .Take(3))
+                {
+                    var tareasAsignadas = listaTarea!.Count(t => t.Usuario!.Nombre == usuario.Nombre);
+                    var icono = rank < iconosRanking.Length ? iconosRanking[rank] : "🏅";  
+                    rank++; 
+
+                    <li>
+                        <span class="ranking-icon">@icono</span>
+                        <span class="ranking-name">@usuario.Nombre</span>
+                        <span class="ranking-score">@tareasAsignadas tareas</span>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+
+
+    <div class="table-container">
+        <h5>Backlog</h5>
+        <br />
+        <div class="mb-3">
+            <div class="input-group">
+                <input type="text" id="searchBox" class="form-control" placeholder="Buscar por nombre de tarea..." onkeyup="filtrarTareas()">                
+                <span class="input-group-text">
+                    <i class="fa fa-search"></i>  
+                </span>
+            </div>
+        </div>
+
+
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Tarea</th>
+                    <th>Estado</th>
+                    <th>Persona Asignada</th>
+                </tr>
+            </thead>
+            <tbody id="tareasTableBody">
+                @foreach (var tarea in listaTarea!)
+                {
+                    <tr>
+                        <td>@tarea.Nombre</td>
+                        <td>
+                            <select @bind="tarea.Estado" @onblur="() => ActualizarEstadoTarea(tarea)" class="form-select w-75 custom-select"
+                                    style="background-color:@GetBackgroundColor(tarea.Estado!); color:@GetTextColor(tarea.Estado!);">
+                                <option value="P" class="text-warning">Pendiente</option>
+                                <option value="E" class="text-primary">En Progreso</option>
+                                <option value="C" class="text-success">Completada</option>
+                            </select>
+                        </td>
+                        <td>
+                             
+                            <div class="initials-circle"
+                                 style="background-color:@GetUserColor(tarea.Usuario!.Nombre)"
+                                 data-bs-toggle="tooltip"
+                                 data-bs-placement="top"
+                                 title="Persona asignada: @tarea.Usuario.Nombre">
+                                @GetInitials(tarea.Usuario.Nombre)
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+     
+    <!-- Tabla de Proyectos -->
+    <div class="table-container">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Proyecto</th>
+                    <th>Fecha de Inicio</th>
+                    <th>Fecha de Vencimiento</th>
+                    <th>Estado</th>
+                    <th>Progreso (%)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var proyecto in listaProyecto!)
+                {
+                    <tr>
+                        <td>@proyecto.Nombre</td>
+                        <td>@proyecto.FechaInicio</td>
+                        <td>@proyecto.FechaFin</td>
+                        <td>@ObtenerDescripcionEstado(proyecto.Estado)</td>
+                        <td>@proyecto.PorcentajeCompleto</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Contenedor para los gráficos -->
+    <div class="chart-container">
+      
+        <div class="charts-row">
+            <div class="chart-container">
+                <h6>Progreso de Proyectos</h6>
+                <!-- Gráfico de Barras -->
+                <canvas id="myChart" width="400" height="200"></canvas>
+            </div>
+            <div class="chart-container">
+                <h6>Estado de Proyectos</h6>
+                <!-- Gráfico Circular -->
+                <canvas id="proyectosPorEstado" width="300" height="300"></canvas>
+            </div>
+        </div>
+
+         
+        <div class="chart-container">
+            <h6>Proyectos por Prioridad</h6>
+            <canvas id="proyectosPorPrioridad" width="300" height="300"></canvas>
+        </div>
+
+    </div>
+
+    
+}
+
+
+@code {
+    private List<ProyectoDTO>? listaProyecto = null;
+    private List<TareaDTO>? listaTarea = null;
+    private List<UsuarioDTO>? listaUsuario = null;
+
+
+    private string ObtenerDescripcionEstado(string? estado)
+    {
+        return estado switch
+        {
+            "P" => "Pendiente",
+            "E" => "En Progreso",
+            "C" => "Completada",
+            _ => "Desconocido"
+        };
+    }
+
+
+    private string GetBackgroundColor(string estado)
+    {
+        return estado switch
+        {
+            "P" => "#fff3cd",  
+            "E" => "#d0e5ff",  
+            "C" => "#c3e6cb", 
+            _ => "transparent"  
+        };
+    }
+
+    private string GetTextColor(string estado)
+    {
+        return estado switch
+        {
+            "P" => "#856404",  
+            "E" => "#0d6efd",  
+            "C" => "#155724",  
+
+            _ => "black"  
+        };
+    }
+
+    // Función para obtener iniciales del usuario
+    private string GetInitials(string usuario)
+    {
+        if (string.IsNullOrEmpty(usuario))
+            return string.Empty;
+
+        var nombres = usuario.Split(' ');
+        string initials = string.Join("", nombres.Select(n => n[0]));
+        return initials.Length > 2 ? initials.Substring(0, 2) : initials;  // Limitar a 2 letras
+    }
+
+     
+    private string GetUserColor(string usuario)
+    {
+         
+        int hashCode = usuario.GetHashCode();
+
+         
+        int red = (hashCode & 0xFF0000) >> 16;
+        int green = (hashCode & 0x00FF00) >> 8;
+        int blue = (hashCode & 0x0000FF);
+
+         
+        red = (red + 100) % 256;
+        green = (green + 150) % 256;
+        blue = (blue + 200) % 256;
+
+         
+        return $"rgb({red % 256}, {green % 256}, {blue % 256})";
+    }
+
+
+    private async Task ActualizarEstadoTarea(TareaDTO tarea)
+    {
+        try
+        {
+            await tareaService.Editar(tarea);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error al actualizar el estado de la tarea: {ex.Message}");
+            await Swal.FireAsync("Error", "Hubo un problema al actualizar el estado de la tarea.", SweetAlertIcon.Error);
+        }
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Obtener la lista de proyectos, tareas y usuarios desde el servicio
+            listaTarea = await tareaService.Lista();
+            listaProyecto = await proyectoService.Lista();
+            listaUsuario = await usuarioService.Lista();
+
+             
+            if (listaProyecto == null)
+            {
+                Console.WriteLine("Lista de proyectos es nula");
+            }
+            else
+            {
+                Console.WriteLine($"Proyectos cargados: {listaProyecto.Count}");
+            }
+
+             
+            if (listaProyecto != null && listaProyecto.Count > 0)
+            {
+                await ConfigurarGraficoBarras();
+            }
+
+                     
+            listaProyecto = await proyectoService.Lista();
+
+            if (listaProyecto != null && listaProyecto.Count > 0)
+            {
+                await ConfigurarGraficoCircular();
+            }
+
+
+            if (listaProyecto != null && listaProyecto.Count > 0)
+            {
+                await ConfigurarGraficoCircularPrioridadTareas();
+            }
+
+
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error al cargar proyectos: {ex.Message}");
+            await Swal.FireAsync("Error", "Hubo un problema al cargar los proyectos", SweetAlertIcon.Error);
+        }
+    }
+
+    private async Task ConfigurarGraficoBarras()
+    {
+        
+        if (listaProyecto == null || listaProyecto.Count == 0)
+        {
+            return;
+        }
+
+        // Asegurarse de que la página esté completamente renderizada
+        await InvokeAsync(StateHasChanged);
+
+        // Esperar a que el componente se renderice antes de ejecutar JS
+        await InvokeAsync(async () =>
+        {
+            // Definir los datos y etiquetas para Chart.js
+            var labels = listaProyecto.Select(p => p.Nombre).ToArray();
+            var data = listaProyecto.Select(p => p.PorcentajeCompleto ?? 0).ToArray();
+
+            var chartData = new
+            {
+                labels = labels,
+                datasets = new[] {
+                    new {
+                        label = "Porcentaje %",
+                        data = data,
+                        borderWidth = 1,
+                        backgroundColor = "rgba(0, 123, 255, 0.5)",  
+                        borderColor = "rgba(0, 123, 255, 1)",    
+                    }
+                        }
+            };
+
+            var options = new
+            {
+                responsive = true,
+                scales = new
+                {
+                    y = new
+                    {
+                        beginAtZero = true,
+                        ticks = new { beginAtZero = true }   
+                    }
+                }
+            };
+
+             
+            await JSRuntime.InvokeVoidAsync("crearGraficoBarras", "myChart", chartData, options);
+        });
+    }
+
+    private async Task ConfigurarGraficoCircular()
+    {
+        if (listaProyecto == null || listaProyecto.Count == 0)
+        {
+            return;
+        }
+
+        // Contar cuántas tareas hay en cada estado
+        var proyectosPorEstado = listaProyecto
+            .GroupBy(t => t.Estado!)  
+            .ToDictionary(g => g.Key, g => g.Count());  
+
+        // Los estados posibles
+        var proyectos = new[] { "Pendiente", "En Progreso", "Completada" }; 
+      
+        
+        var cantidadPorProyecto = new[] {
+             proyectosPorEstado.ContainsKey("P") ? proyectosPorEstado["P"] : 0,
+             proyectosPorEstado.ContainsKey("E") ? proyectosPorEstado["E"] : 0,
+             proyectosPorEstado.ContainsKey("C") ? proyectosPorEstado["C"] : 0
+         };
+
+         
+        var chartData = new
+        {
+            labels = proyectos,
+            datasets = new[] {
+                new {
+                    label = "Proyectos por Estado",
+                    data = cantidadPorProyecto,
+                    backgroundColor = new[] {
+                        "rgba(255, 99, 132, 0.2)", 
+                        "rgba(255, 159, 64, 0.2)",  
+                        "rgba(75, 192, 192, 0.2)"   
+                    },
+                    borderColor = new[] {
+                        "rgba(255, 99, 132, 1)",
+                        "rgba(255, 159, 64, 1)",
+                        "rgba(75, 192, 192, 1)"
+                    },
+                    borderWidth = 1
+                }
+            }
+        };
+
+         
+        var options = new
+        {
+            responsive = true,
+            plugins = new
+            {
+                legend = new { position = "top" },
+                tooltip = new { enabled = true }
+            }
+        };
+
+         
+        await JSRuntime.InvokeVoidAsync("crearGraficoCircular", "proyectosPorEstado", chartData, options);
+    }
+
+    // Método para configurar el gráfico circular de tareas por prioridad
+
+    private async Task ConfigurarGraficoCircularPrioridadTareas()
+    {
+        if (listaProyecto == null || listaProyecto.Count == 0)
+        {
+            return;
+        }
+
+         
+        var proyectosPorPrioridad = listaProyecto
+            .GroupBy(t => t.Prioridad!)
+            .ToDictionary(g => g.Key, g => g.Count());
+
+        var prioridades = new[] { "Alta", "Media", "Baja" };
+        var cantidadPorPrioridad = new[]
+        {
+        proyectosPorPrioridad.ContainsKey("A") ? proyectosPorPrioridad["A"] : 0,
+        proyectosPorPrioridad.ContainsKey("M") ? proyectosPorPrioridad["M"] : 0,
+        proyectosPorPrioridad.ContainsKey("B") ? proyectosPorPrioridad["B"] : 0
+    };
+
+        var chartData = new
+        {
+            labels = prioridades,
+            datasets = new[] {
+            new {
+                label = "Proyectos por Prioridad",
+                data = cantidadPorPrioridad,
+                backgroundColor = new[] {
+                    "rgba(255, 99, 132, 0.2)",  
+                    "rgba(255, 159, 64, 0.2)", 
+                    "rgba(75, 192, 192, 0.2)"   
+                },
+                borderColor = new[] {
+                    "rgba(255, 99, 132, 1)",
+                    "rgba(255, 159, 64, 1)",
+                    "rgba(75, 192, 192, 1)"
+                },
+                borderWidth = 1
+            }
+        }
+        };
+
+        var options = new
+        {
+            responsive = true,
+            plugins = new
+            {
+                legend = new { position = "top" },
+                tooltip = new { enabled = true }
+            }
+        };
+
+         
+        await JSRuntime.InvokeVoidAsync("crearGraficoCircular", "proyectosPorPrioridad", chartData, options);
+    }
+
+     
+}

@@ -20,6 +20,7 @@ builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IRolService, RolService>();
 builder.Services.AddScoped<ITareaService, TareaService>();
 builder.Services.AddScoped<IRecursoService, RecursoService>();
+ 
 
 builder.Services.AddSweetAlert2();
 

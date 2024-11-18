@@ -13,6 +13,7 @@ namespace BlazorCrud.Client.Services
             _http = http;
         }
 
+
         public async Task<List<ProyectoDTO>> Lista()
         {
             var result = await _http.GetFromJsonAsync<ResponseAPI<List<ProyectoDTO>>>("api/Proyecto/Lista");

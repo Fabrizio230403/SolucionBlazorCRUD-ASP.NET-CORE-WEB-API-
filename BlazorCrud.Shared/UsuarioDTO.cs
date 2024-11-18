@@ -31,6 +31,8 @@ namespace BlazorCrud.Shared
         [DataType(DataType.Date)]
         public DateTime? FechaCreacion { get; set; }
 
+        public DateTime? TokenExpiracion { get; set; }
+
         public RolDTO? Rol { get; set; }
     }
 }

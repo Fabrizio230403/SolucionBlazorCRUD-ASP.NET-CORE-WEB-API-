@@ -1,0 +1,162 @@
+﻿@page "/registro"
+@layout LoginLayout
+
+@inject HttpClient httpClient
+@using BlazorCrud.Shared
+@using CurrieTechnologies.Razor.SweetAlert2;
+@inject NavigationManager navManager
+@inject SweetAlertService Swal;
+
+<style>
+    body {
+        background-image: url('/images/consultorias.jpg');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        height: 100vh;
+    }
+
+    .login-container {
+        background-color: rgba(255, 255, 255, 0.8);
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .card {
+        border-radius: 8px;
+        border: none;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+
+    .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+
+        .btn-success:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+
+    .text-primary {
+        color: #007bff !important;
+    }
+
+    .text-center {
+        font-size: 0.980rem;
+    }
+
+    .form-label {
+        font-weight: bold;
+    }
+
+    .form-control {
+        border-radius: 5px;
+        box-shadow: none;
+        font-size: 1rem;
+    }
+
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+    .login-container .card-body {
+        padding: 30px;
+    }
+
+    .form-text {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+</style>
+
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+    <div class="login-container col-md-6 col-lg-4 shadow-lg">
+        <div class="card-body">
+            <div class="text-center mb-4">
+                <h3 class="h4 text-primary">Regístrate</h3>
+            </div>
+
+            <!-- Formulario de registro -->
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre</label>
+                <input @bind="registro.Nombre" class="form-control" id="nombre" placeholder="Ingresa tu nombre" required />
+            </div>
+
+            <div class="mb-3">
+                <label for="correo" class="form-label">Correo</label>
+                <input @bind="registro.Correo" type="email" class="form-control" id="correo" placeholder="Ingresa tu correo" required />
+            </div>
+
+            <div class="mb-3">
+                <label for="clave" class="form-label">Contraseña</label>
+                <input @bind="registro.Clave" type="password" class="form-control" id="clave" placeholder="Ingresa tu contraseña" required />
+                <small class="form-text text-muted">La contraseña debe tener al menos 8 caracteres.</small>
+            </div>
+
+            <div class="mb-3">
+                <label for="confirmarClave" class="form-label">Confirmar Contraseña</label>
+                <input @bind="registro.ConfirmarClave" type="password" class="form-control" id="confirmarClave" placeholder="Confirma tu contraseña" required />
+            </div>
+
+            <div class="d-grid gap-2">
+                <button @onclick="RegistrarUsuario" class="btn btn-success">Registrar</button>
+            </div>
+
+            <div class="text-center mt-3">
+                <p class="mb-0">¿Ya tienes una cuenta? <a href="/" class="link-primary">Iniciar sesión</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    private RegistroDTO registro = new RegistroDTO();
+
+    private async Task RegistrarUsuario()
+    {
+        // Verificar que las contraseñas coinciden
+        if (registro.Clave != registro.ConfirmarClave)
+        {
+            // Manejo de error si las contraseñas no coinciden
+            await Swal.FireAsync("Error", "Las contraseñas no coinciden. Por favor, verifícalas.", SweetAlertIcon.Error);
+            return; // Detiene la ejecución si las contraseñas no coinciden
+        }
+
+        // Enviar solicitud de registro
+        var response = await httpClient.PostAsJsonAsync("/api/Usuario/Registrar", registro);
+
+        if (response.IsSuccessStatusCode)
+        {
+            // Usuario registrado correctamente, redirigir al login
+            await Swal.FireAsync("Éxito", "Te has registrado correctamente. Inicia sesión ahora.", SweetAlertIcon.Success);
+            navManager.NavigateTo("/");
+        }
+        else
+        {
+            // Manejo de error si ocurre algún problema durante el registro
+            var errorMessage = "Hubo un problema durante el registro. Intenta nuevamente.";
+
+            // Aquí puedes agregar más detalles de la respuesta si es necesario
+            if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            {
+                errorMessage = "El correo electrónico ya está registrado. Por favor, usa otro.";
+            }
+
+            // Mostrar mensaje de error con SweetAlert
+            await Swal.FireAsync("Error", errorMessage, SweetAlertIcon.Error);
+        }
+    }
+}

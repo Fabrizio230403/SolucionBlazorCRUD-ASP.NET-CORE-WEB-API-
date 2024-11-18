@@ -1,4 +1,10 @@
-﻿@using Microsoft.AspNetCore.Components.Authorization
+﻿ ﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Authorization;
+ 
+@using BlazorCrud.Client.Services;
+@using BlazorCrud.Shared;
+
+@attribute [Authorize]
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
@@ -7,7 +13,51 @@
             <span class="navbar-toggler-icon"></span>
         </button>
     </div>
-</div>
+</div><br />
+
+<AuthorizeView>
+    <Authorized>
+        <!-- Bloque con la imagen del usuario, nombre y rol, centrado -->
+        <div class="navbar-user-info ms-3 d-flex flex-column align-items-center" style="margin-right:20px;">
+            <!-- Foto del usuario dependiendo de su rol -->
+            @if (@context.User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value == "Administrador")
+            {
+                <img src="images/admin.png" alt="Foto de Perfil Admin" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;" />
+            }
+            else if (@context.User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value == "Gerente de Proyecto")
+            {
+                <img src="images/gerente.png" alt="Foto de Perfil Gerente de Proyecto" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;" />
+            }
+            else if (@context.User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value == "Consultor")
+            {
+                <img src="images/consultor.png" alt="Foto de Perfil Consultor" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;" />
+            }
+            else
+            {
+                <img src="images/default.png" alt="Foto de Perfil" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;" />
+            }
+
+            <!-- Nombre del usuario con mayor tamaño -->
+            <span class="d-block mt-2" style="font-size: 1.4rem; font-weight: bold; color:white; position:center;">@context.User.Identity!.Name</span>
+
+            <!-- Rol del usuario debajo del nombre -->
+            <span class="d-block text-muted" style="font-size: 1.2rem; position:center;">@context.User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</span>
+
+            <!-- Línea de separación -->
+            <hr class="w-50 mt-3" />
+
+            <!-- Menú desplegable con opciones -->
+            <ul class="dropdown-menu" aria-labelledby="usuarioMenu">
+                <!-- Opción de Configuración con ícono -->
+                <li><a class="dropdown-item" href="/configuracion"><i class="fas fa-cogs me-2"></i>Configuración</a></li>
+
+                <!-- Opción de Cerrar Sesión con ícono -->
+                <li><a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión</a></li>
+            </ul>
+        </div>
+    </Authorized>
+</AuthorizeView>
+
 
 <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
     <nav class="flex-column">
@@ -16,21 +66,11 @@
                 <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
             </NavLink>
         </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-
-
+         
 
         <AuthorizeView Roles="Administrador">
             <Authorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="weather">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-                    </NavLink>
-                </div>
+                 
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="dashboard">
                         <span class="fas fa-tachometer-alt me-2" aria-hidden="true"></span> Dashboard
@@ -56,16 +96,17 @@
                         <span class="fas fa-clipboard-list me-2" aria-hidden="true"></span> Recursos del Proyecto
                     </NavLink>
                 </div>
-            </Authorized>            
+            </Authorized>
         </AuthorizeView>
         <AuthorizeView Roles="Gerente de Proyecto">
             <Authorized>
-                 
+
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="dashboard">
                         <span class="fas fa-tachometer-alt me-2" aria-hidden="true"></span> Dashboard
                     </NavLink>
-                </div>            
+                </div>
+
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="proyectos">
                         <span class="fas fa-briefcase me-2" aria-hidden="true"></span> Proyectos
@@ -85,7 +126,6 @@
         </AuthorizeView>
         <AuthorizeView Roles="Consultor">
             <Authorized>
-
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="dashboard">
                         <span class="fas fa-tachometer-alt me-2" aria-hidden="true"></span> Dashboard
@@ -108,8 +148,8 @@
                 </div>
             </Authorized>
         </AuthorizeView>
-        
-         
+
+
     </nav>
 </div>
 

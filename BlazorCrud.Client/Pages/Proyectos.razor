@@ -1,4 +1,5 @@
 ﻿@page "/proyectos"
+
 @using Microsoft.AspNetCore.Authorization;
 @attribute [Authorize(Roles = "Administrador, Gerente de Proyecto")]
 
@@ -24,13 +25,13 @@
             <th>Prioridad</th>
             <th>Estado</th>
             <th>Usuario</th>
-            <th>Porcentaje(%)</th>     
+            <th>Porcentaje(%)</th>
             <th>Acciones</th>
         </tr>
     </thead>
     <tbody>
 
-        @if(listaProyecto == null)
+        @if (listaProyecto == null)
         {
             <tr>
                 <td colspan="11" align="center">
@@ -40,7 +41,7 @@
         }
         else
         {
-            @foreach(var item in listaProyecto)
+            @foreach (var item in listaProyecto)
             {
                 <tr>
                     <td>@item.ProyectoId</td>
@@ -70,10 +71,10 @@
                     </td>
                     <td>
                         <a class="btn btn-primary btn-sm" href="proyecto/@item.ProyectoId">
-                            <i class="fas fa-edit"></i>  
+                            <i class="fas fa-edit"></i>
                         </a>
                         <button type="button" class="btn btn-danger btn-sm" @onclick="(() => Eliminar(item.ProyectoId))">
-                            <i class="fas fa-trash-alt"></i>  
+                            <i class="fas fa-trash-alt"></i>
                         </button>
                     </td>
                 </tr>
@@ -94,12 +95,12 @@
     private async Task Eliminar(int id)
     {
         var resultado = await Swal.FireAsync(new SweetAlertOptions
-        {
-            Title = "Eliminar Proyecto",
-            Text = "Deseas eliminar el proyecto?",
-            Icon = SweetAlertIcon.Question,
-            ShowCancelButton = true
-        });
+            {
+                Title = "Eliminar Proyecto",
+                Text = "Deseas eliminar el proyecto?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true
+            });
 
         if (resultado.IsConfirmed)
         {
@@ -127,7 +128,7 @@
         {
             "P" => "Pendiente",
             "E" => "En Progreso",
-            "C" => "Completado",          
+            "C" => "Completada",
             _ => "Desconocido"
         };
     }
@@ -136,7 +137,7 @@
     {
 
         if (porcentaje == null)
-            return "0%"; 
+            return "0%";
 
 
         int porcentajeEntero = (int)Math.Round(porcentaje.Value);
@@ -144,11 +145,11 @@
 
         if (porcentajeEntero == 0)
         {
-            return "0%";  
+            return "0%";
         }
         else if (porcentajeEntero == 100)
         {
-            return "105%"; 
+            return "105%";
         }
         else
         {
@@ -157,18 +158,18 @@
                 return $"{porcentajeEntero + 5}%";
 
             if (porcentajeEntero <= 30)
-                return $"{porcentajeEntero + 5}%";  
+                return $"{porcentajeEntero + 5}%";
 
             if (porcentajeEntero <= 50)
-                return $"{porcentajeEntero}%"; 
+                return $"{porcentajeEntero}%";
 
             if (porcentajeEntero <= 70)
-                return $"{porcentajeEntero}%";  
+                return $"{porcentajeEntero}%";
 
             if (porcentajeEntero <= 90)
-                return $"{porcentajeEntero + 3}%";  
+                return $"{porcentajeEntero + 3}%";
 
-            return $"{porcentajeEntero}%";  
+            return $"{porcentajeEntero}%";
         }
     }
 }

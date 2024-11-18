@@ -64,5 +64,7 @@ namespace BlazorCrud.Client.Services
             else
                 throw new Exception(response.Mensaje);
         }
+
+
     }
 }

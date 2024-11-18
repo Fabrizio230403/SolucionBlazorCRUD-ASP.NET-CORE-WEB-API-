@@ -2,21 +2,20 @@
 
 @using Microsoft.AspNetCore.Authorization;
 @using Microsoft.AspNetCore.Components.Authorization;
+@using BlazorCrud.Client.Services;
+@using BlazorCrud.Shared;
 
+ 
 @attribute [Authorize]
 
+ 
+
 <PageTitle>Home</PageTitle>
-
-<h1>Hello, world!</h1>
-
-Welcome to your new app.
 
 <AuthorizeView>
     <Authorized>
         <h1>Bienvenido @context.User.Identity!.Name</h1>
-        <p>Correo: @context.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value</p>
-        <p>Rol: @context.User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</p>
-
-
+        <span style="font-weight: bold;">Correo:</span><p>@context.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value </p>
+        <span style="font-weight: bold;">Rol: </span><p>@context.User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</p>
     </Authorized>
 </AuthorizeView>
