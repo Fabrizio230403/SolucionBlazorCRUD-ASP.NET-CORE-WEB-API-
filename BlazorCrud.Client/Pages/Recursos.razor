@@ -1,0 +1,152 @@
+﻿@page "/recursos"
+@using Microsoft.AspNetCore.Authorization;
+@attribute [Authorize(Roles = "Administrador,Gerente de Proyecto,Consultor")]
+
+@using BlazorCrud.Shared;
+@using CurrieTechnologies.Razor.SweetAlert2;
+@using BlazorCrud.Client.Services;
+@using BlazorCrud.Client.Extensiones;
+@using Microsoft.AspNetCore.Components.Authorization;
+@using System.Security.Claims;
+
+@inject SweetAlertService Swal;
+@inject AuthenticationStateProvider autenticacionProvider;
+@inject IRecursoService recursoService;
+@inject IRolPermisoService RolPermisoService;
+
+<h3>Recursos</h3>
+
+@if (permisos_usuario != null && permisos_usuario.Contains("Crear Recurso"))
+{
+    <a class="btn btn-success btn-sm mb-3" href="recurso">Nuevo Recurso</a>
+}
+
+@if (permisos_usuario != null && permisos_usuario.Contains("Leer Recurso"))
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Proyecto</th>
+                <th>Nombre</th>
+                <th>Tipo de Recurso</th>
+                <th>Costo</th>
+                <th>Tiempo Asignado</th>
+                <th>Usuario</th>
+                @if (permisos_usuario != null && (permisos_usuario.Contains("Editar Recurso") || permisos_usuario.Contains("Eliminar Recurso")))
+                {
+                    <th>Acciones</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+
+            @if (listaRecurso == null)
+            {
+                <tr>
+                    <td colspan="11" align="center">
+                        <img style="width:50px" src="https://media.tenor.com/On7kvXhzmI4AAAAj/loading-gif.gif" />
+                    </td>
+                </tr>
+            }
+            else
+            {
+                @foreach (var item in listaRecurso)
+                {
+                    <tr>
+                        <td>@item.RecursoId</td>
+                        <td>@item.Proyecto?.Nombre</td>
+                        <td>@item.Nombre</td>
+                        <td>@ObtenerTipoRecurso(item.Tipo)</td>
+                        <td>@item.Costo</td>
+                        <td>@item.TiempoAsignado</td>
+                        <td>@item.Usuario?.Nombre</td>
+                        @if (permisos_usuario != null && (permisos_usuario.Contains("Editar Recurso") || permisos_usuario.Contains("Eliminar Recurso")))
+                        {
+                            <td>
+                                @if (permisos_usuario.Contains("Editar Recurso"))
+                                {
+                                    <a class="btn btn-primary btn-sm" href="recurso/@item.RecursoId">
+                                        Editar
+                                    </a>
+                                }
+
+                                <button type="button" class="btn btn-danger btn-sm ms-2" @onclick="(() => Eliminar(item.RecursoId))"
+                                 disabled="@(permisos_usuario == null || !permisos_usuario.Contains("Eliminar Proyecto"))">
+                                    Eliminar
+                                </button>
+                                
+                            </td>
+                        }
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <h1>Usted no tiene permisos para visualizar los recursos</h1>
+}
+
+@code {
+    List<RecursoDTO>? listaRecurso = null;
+    List<string>? permisos_usuario = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        listaRecurso = await recursoService.Lista();
+
+        // Obtener permisos del usuario autenticado
+        var authState = await autenticacionProvider.GetAuthenticationStateAsync();
+        var usuario = authState.User;
+
+        if (usuario.Identity != null && usuario.Identity.IsAuthenticated)
+        {
+            var usuarioId = int.Parse(usuario.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            permisos_usuario = await RolPermisoService.ListaPermisos(usuarioId);
+        }
+    }
+
+    private async Task Eliminar(int id)
+    {
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Eliminar Recurso",
+                Text = "¿Deseas eliminar el recurso?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true
+            });
+
+        if (resultado.IsConfirmed)
+        {
+            try
+            {
+                var eliminado = await recursoService.Eliminar(id);
+                if (eliminado)
+                {
+                    listaRecurso = listaRecurso!.FindAll(e => e.RecursoId != id);
+                    await Swal.FireAsync("Eliminado", "El recurso ha sido eliminado exitosamente.", SweetAlertIcon.Success);
+                }
+                else
+                {
+                    await Swal.FireAsync("Error", "No se pudo eliminar el recurso.", SweetAlertIcon.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                await Swal.FireAsync("Error", $"Ocurrió un error: {ex.Message}", SweetAlertIcon.Error);
+            }
+        }
+    }
+
+    private string ObtenerTipoRecurso(string? tipo)
+    {
+        return tipo switch
+        {
+            "H" => "Humano",
+            "M" => "Material",
+            _ => "Desconocido"
+        };
+    }
+}
