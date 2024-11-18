@@ -26,7 +26,7 @@
             <option value="">Seleccione un proyecto</option>
             @foreach (var proyecto in proyectos)
             {
-                <option value="@proyecto.ProyectoID">@proyecto.Nombre</option>
+                    <option value="@proyecto.ProyectoID">@proyecto.Nombre</option>
             }
         </InputSelect>
         <ValidationMessage For="@(() => tarea.ProyectoID)"></ValidationMessage>
@@ -38,7 +38,7 @@
             <option value="">Seleccione un usuario</option>
             @foreach (var usuario in usuarios)
             {
-                <option value="@usuario.UsuarioId">@usuario.Nombre</option>
+                    <option value="@usuario.UsuarioId">@usuario.Nombre</option>
             }
         </InputSelect>
         <ValidationMessage For="@(() => tarea.UsuarioAsignadoID)"></ValidationMessage>

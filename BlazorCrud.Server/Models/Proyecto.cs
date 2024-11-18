@@ -5,7 +5,7 @@ namespace BlazorCrud.Server.Models;
 
 public partial class Proyecto
 {
-    public int ProyectoId { get; set; }
+    public int ProyectoID { get; set; }
 
     public string Nombre { get; set; } = null!;
 
@@ -19,7 +19,7 @@ public partial class Proyecto
 
     public string? Estado { get; set; }
 
-    public int? GerenteId { get; set; }
+    public int? GerenteID { get; set; }
 
     public decimal? PorcentajeCompleto { get; set; }
 

@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Content Remove="C:\Users\333\.nuget\packages\chartjs.blazor.fork\2.0.2\contentFiles\any\netstandard2.1\wwwroot\ChartJsBlazorInterop.js" />
+    <Content Remove="C:\Users\Piero_PC\.nuget\packages\chartjs.blazor.fork\2.0.2\contentFiles\any\netstandard2.1\wwwroot\ChartJsBlazorInterop.js" />
   </ItemGroup>
 
   <ItemGroup>

@@ -46,7 +46,7 @@ namespace BlazorCrud.Client.Services
 
         public async Task<int> Editar(ProyectoDTO proyecto)
         {
-            var result = await _http.PutAsJsonAsync($"api/Proyecto/Editar/{proyecto.ProyectoId}", proyecto);
+            var result = await _http.PutAsJsonAsync($"api/Proyecto/Editar/{proyecto.ProyectoID}", proyecto);
             var response = await result.Content.ReadFromJsonAsync<ResponseAPI<int>>();
 
             if (response!.EsCorrecto)

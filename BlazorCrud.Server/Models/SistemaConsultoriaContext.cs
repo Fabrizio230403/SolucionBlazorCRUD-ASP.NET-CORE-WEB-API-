@@ -61,30 +61,6 @@ public partial class SistemaConsultoriaContext : DbContext
                 .HasConstraintName("FK__Notificac__Usuar__74AE54BC");
         });
 
-        modelBuilder.Entity<Proyecto>(entity =>
-        {
-            entity.HasKey(e => e.ProyectoId).HasName("PK__Proyecto__CF241D452E3166F6");
-
-            entity.Property(e => e.ProyectoId).HasColumnName("ProyectoID");
-            entity.Property(e => e.Estado)
-                .HasMaxLength(1)
-                .IsUnicode(false)
-                .IsFixedLength();
-            entity.Property(e => e.GerenteId).HasColumnName("GerenteID");
-            entity.Property(e => e.Nombre).HasMaxLength(100);
-            entity.Property(e => e.PorcentajeCompleto)
-                .HasDefaultValue(0m)
-                .HasColumnType("decimal(5, 2)");
-            entity.Property(e => e.Prioridad)
-                .HasMaxLength(1)
-                .IsUnicode(false)
-                .IsFixedLength();
-
-            entity.HasOne(d => d.Gerente).WithMany(p => p.Proyectos)
-                .HasForeignKey(d => d.GerenteId)
-                .HasConstraintName("FK__Proyectos__Geren__656C112C");
-        });
-
         modelBuilder.Entity<Recurso>(entity =>
         {
             entity.HasKey(e => e.RecursoId).HasName("PK__Recursos__82F2B1A415804F64");
@@ -122,26 +98,34 @@ public partial class SistemaConsultoriaContext : DbContext
             entity.Property(e => e.Nombre).HasMaxLength(50);
         });
 
+        modelBuilder.Entity<Proyecto>(entity =>
+        {
+            entity.HasKey(e => e.ProyectoID).HasName("PK__Proyecto__CF241D452E3166F6");
+            entity.Property(e => e.ProyectoID).HasColumnName("ProyectoID");
+            entity.Property(e => e.Nombre).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Descripcion).HasMaxLength(500);
+            entity.Property(e => e.Prioridad).HasMaxLength(1).IsUnicode(false).IsFixedLength();
+            entity.Property(e => e.Estado).HasMaxLength(1).IsUnicode(false).IsFixedLength();
+            entity.Property(e => e.GerenteID).HasColumnName("GerenteID");
+            entity.Property(e => e.PorcentajeCompleto).HasDefaultValue(0m).HasColumnType("decimal(5, 2)");
+            entity.Property(e => e.FechaInicio).HasColumnType("date");
+            entity.Property(e => e.FechaFin).HasColumnType("date");
+            entity.HasOne(d => d.Gerente).WithMany(p => p.Proyectos).HasForeignKey(d => d.GerenteID).HasConstraintName("FK__Proyectos__Geren__656C112C");
+        });
+
+
+
         modelBuilder.Entity<Tarea>(entity =>
         {
-            entity.HasKey(e => e.TareaId).HasName("PK__Tareas__5CD836718CF56CB4");
-
-            entity.Property(e => e.TareaId).HasColumnName("TareaID");
-            entity.Property(e => e.Estado)
-                .HasMaxLength(1)
-                .IsUnicode(false)
-                .IsFixedLength();
-            entity.Property(e => e.Nombre).HasMaxLength(100);
-            entity.Property(e => e.ProyectoId).HasColumnName("ProyectoID");
-            entity.Property(e => e.UsuarioAsignadoId).HasColumnName("UsuarioAsignadoID");
-
-            entity.HasOne(d => d.Proyecto).WithMany(p => p.Tareas)
-                .HasForeignKey(d => d.ProyectoId)
-                .HasConstraintName("FK__Tareas__Proyecto__693CA210");
-
-            entity.HasOne(d => d.UsuarioAsignado).WithMany(p => p.Tareas)
-                .HasForeignKey(d => d.UsuarioAsignadoId)
-                .HasConstraintName("FK__Tareas__UsuarioA__6B24EA82");
+            entity.HasKey(e => e.TareaID).HasName("PK__Tareas__5CD836718CF56CB4");
+            entity.Property(e => e.TareaID).HasColumnName("TareaID");
+            entity.Property(e => e.Nombre).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Descripcion).IsRequired(false);
+            entity.Property(e => e.FechaInicio).HasColumnType("date").IsRequired(false);
+            entity.Property(e => e.FechaFin).HasColumnType("date").IsRequired(false);
+            entity.Property(e => e.Estado).HasMaxLength(50).IsUnicode(false).IsRequired(false);
+            entity.HasOne(d => d.Proyecto).WithMany(p => p.Tareas).HasForeignKey(d => d.ProyectoID).HasConstraintName("FK_Tareas_ProyectoID");
+            entity.HasOne(d => d.UsuarioAsignado).WithMany(p => p.Tareas).HasForeignKey(d => d.UsuarioAsignadoID).HasConstraintName("FK_Tareas_UsuarioAsignadoID");
         });
 
         modelBuilder.Entity<Usuario>(entity =>

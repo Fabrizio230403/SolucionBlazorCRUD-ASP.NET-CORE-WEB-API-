@@ -39,7 +39,7 @@ namespace BlazorCrud.Server.Controllers
                         Prioridad = item.Prioridad,
                         Estado = item.Estado,
                         GerenteID = item.GerenteID,
-                        PorcentajeCompleto = item.PorcentajeCompleto 
+                        PorcentajeCompleto = item.PorcentajeCompleto
                     });
                 }
 
@@ -164,7 +164,7 @@ namespace BlazorCrud.Server.Controllers
                     dbProyecto.Estado = proyecto.Estado;
                     dbProyecto.GerenteID = proyecto.GerenteID;
                     dbProyecto.PorcentajeCompleto = proyecto.PorcentajeCompleto;
-                    
+
                     _dbContext.Proyectos.Update(dbProyecto);
                     await _dbContext.SaveChangesAsync();
 

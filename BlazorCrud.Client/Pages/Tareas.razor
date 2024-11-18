@@ -6,75 +6,113 @@
 @using BlazorCrud.Shared;
 @using CurrieTechnologies.Razor.SweetAlert2;
 @using BlazorCrud.Client.Services;
+@using BlazorCrud.Client.Extensiones;
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims;
 
 @inject SweetAlertService Swal;
+@inject AuthenticationStateProvider autenticacionProvider
 @inject ITareaService tareaService;
+@inject IRolPermisoService RolPermisoService;
 
 <h3>Tareas</h3>
 
-<a class="btn btn-success btn-sm mb-3" href="tarea">Nueva Tarea</a>
+@if (permisos_usuario != null && permisos_usuario.Contains("Crear Tarea"))
+{
+    <a class="btn btn-success btn-sm mb-3" href="tarea">Nueva Tarea</a>
+}
+else
+{
+    <a class="btn btn-success btn-sm mb-3 disabled">Nueva Tarea</a>
+}
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Nombre</th>
-            <th>Proyecto</th>
-            <th>Usuario Asignado</th>
-            <th>Descripción</th>
-            <th>Fecha Inicio</th>
-            <th>Fecha Fin</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-
-        @if (listaTarea == null)
-        {
+@if (permisos_usuario != null && permisos_usuario.Contains("Leer Tarea"))
+{
+    <table class="table">
+        <thead>
             <tr>
-                <td colspan="11" align="center">
-                    <img style="width:50px" src="https://media.tenor.com/On7kvXhzmI4AAAAj/loading-gif.gif" />
-                </td>
+                <th>#</th>
+                <th>Nombre</th>
+                <th>Proyecto</th>
+                <th>Usuario Asignado</th>
+                <th>Descripción</th>
+                <th>Fecha Inicio</th>
+                <th>Fecha Fin</th>
+                <th>Estado</th>
+                <th>Acciones</th>
             </tr>
-        }
-        else
-        {
-            int contador = 1;
+        </thead>
+        <tbody>
 
-            @foreach (var item in listaTarea)
+            @if (listaTarea == null)
             {
                 <tr>
-                    <td>@contador</td>
-                    <td>@item.Nombre</td>
-                    <td>@item.ProyectoID</td>
-                    <td>@item.UsuarioAsignadoID</td>
-                    <td>@item.Descripcion</td>
-                    <td>@item.FechaInicio?.ToString("dd/MM/yyyy")</td>
-                    <td>@item.FechaFin?.ToString("dd/MM/yyyy")</td>
-                    <td>@item.Estado</td>
-                    <td>
-                        <a class="btn btn-primary btn-sm" href="tarea/@item.TareaID">
-                            Editar
-                        </a>
-                        <button type="button" class="btn btn-danger btn-sm ms-2" @onclick="(() => Eliminar(item.TareaID))">
-                            Eliminar
-                        </button>
+                    <td colspan="9" align="center">
+                        <img style="width:50px" src="https://media.tenor.com/On7kvXhzmI4AAAAj/loading-gif.gif" />
                     </td>
                 </tr>
-
-                contador++;
             }
-        }
-    </tbody>
-</table>
+            else
+            {
+                int contador = 1;
+
+                @foreach (var item in listaTarea)
+                {
+                    <tr>
+                        <td>@contador</td>
+                        <td>@item.Nombre</td>
+                        <td>@item.ProyectoID</td>
+                        <td>@item.UsuarioAsignadoID</td>
+                        <td>@item.Descripcion</td>
+                        <td>@item.FechaInicio?.ToString("dd/MM/yyyy")</td>
+                        <td>@item.FechaFin?.ToString("dd/MM/yyyy")</td>
+                        <td>@item.Estado</td>
+                        <td>
+                            @if (permisos_usuario != null && permisos_usuario.Contains("Editar Tarea"))
+                            {
+                                <a class="btn btn-primary btn-sm" href="tarea/@item.TareaID">Editar</a>
+                            }
+                            else
+                            {
+                                <a class="btn btn-primary btn-sm disabled">Editar</a>
+                            }
+
+                            <button type="button" class="btn btn-danger btn-sm ms-2" @onclick="(() => Eliminar(item.TareaID))"
+                                    disabled="@(permisos_usuario == null || !permisos_usuario.Contains("Eliminar Proyecto"))">
+                                Eliminar
+                            </button>
+                            
+                        </td>
+                    </tr>
+
+                    contador++;
+                }
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <h1>Usted no tiene permisos para visualizar las tareas</h1>
+}
 
 @code {
     List<TareaDTO>? listaTarea = null;
+    List<String>? permisos_usuario = null;
 
     protected override async Task OnInitializedAsync()
     {
         listaTarea = await tareaService.Lista();
+
+        // SESIÓN
+        var authState = await autenticacionProvider.GetAuthenticationStateAsync();
+        var usuario = authState.User;
+
+        if (usuario.Identity != null && usuario.Identity.IsAuthenticated)
+        {
+            var usuarioId = int.Parse(usuario.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            permisos_usuario = await RolPermisoService.ListaPermisos(usuarioId);
+        }
     }
 
     private async Task Eliminar(int id)
