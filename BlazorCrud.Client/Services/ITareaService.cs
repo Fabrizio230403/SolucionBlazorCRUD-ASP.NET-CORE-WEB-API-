@@ -11,5 +11,9 @@ namespace BlazorCrud.Client.Services
         Task<bool> Eliminar(int id);
 
         Task<List<TareaDTO>> ObtenerTareasPorUsuario(int usuarioId);
+
+        // Métodos para los reportes
+        Task<byte[]> GenerarReportePDF();
+        Task<byte[]> GenerarReporteExcel();
     }
 }

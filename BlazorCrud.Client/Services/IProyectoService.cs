@@ -10,5 +10,7 @@ namespace BlazorCrud.Client.Services
         Task<int> Editar(ProyectoDTO proyecto);
         Task<bool> Eliminar(int id);
         Task<List<ProyectoDTO>> ObtenerProyectosAsignadosPorUsuario(int usuarioId);
+
+        Task<ResponseAPI<string>> EnviarCorreo(int usuarioId);
     }
 }

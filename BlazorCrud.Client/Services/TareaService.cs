@@ -1,4 +1,5 @@
 ﻿using BlazorCrud.Shared;
+using System.Net.Http;
 using System.Net.Http.Json;
 
 namespace BlazorCrud.Client.Services
@@ -73,6 +74,34 @@ namespace BlazorCrud.Client.Services
                 return result.Valor!;
             else
                 throw new Exception(result.Mensaje);
+        }
+
+        public async Task<byte[]> GenerarReportePDF()
+        {
+            var result = await _http.GetAsync("api/Tarea/ReportePDF");
+
+            if (result.IsSuccessStatusCode)
+            {
+                return await result.Content.ReadAsByteArrayAsync();
+            }
+            else
+            {
+                throw new Exception("Error al generar el reporte PDF");
+            }
+        }
+
+        public async Task<byte[]> GenerarReporteExcel()
+        {
+            var result = await _http.GetAsync("api/Tarea/ReporteExcel");
+
+            if (result.IsSuccessStatusCode)
+            {
+                return await result.Content.ReadAsByteArrayAsync();
+            }
+            else
+            {
+                throw new Exception("Error al generar el reporte Excel");
+            }
         }
 
     }

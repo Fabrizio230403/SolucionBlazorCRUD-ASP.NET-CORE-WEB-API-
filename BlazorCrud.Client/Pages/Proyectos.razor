@@ -26,6 +26,7 @@ else
     <a class="btn btn-secondary btn-sm mb-3 disabled">Nuevo Proyecto</a>
 }
 
+
 @if (permisos_usuario != null && permisos_usuario.Contains("Leer Proyecto"))
 {
     <table class="table">
@@ -86,7 +87,20 @@ else
                                 </div>
                             </div>
                         </td>
-
+                        <td>
+                            @if (permisos_usuario != null && permisos_usuario.Contains("Enviar Proyecto"))
+                            {
+                                <button class="btn btn-info btn-sm" @onclick="(() => EnviarCorreo(item.Gerente!.UsuarioId))">
+                                    <i class="fas fa-envelope"></i> Enviar Correo
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-info btn-sm disabled">
+                                    <i class="fas fa-envelope"></i> Enviar Correo
+                                </button>
+                            }
+                        </td>
                         <td>
                             @if (permisos_usuario != null && permisos_usuario.Contains("Editar Proyecto"))
                             {
@@ -122,6 +136,38 @@ else
     List<ProyectoDTO>? listaProyecto = null;
     List<String>? permisos_usuario = null;
 
+    private async Task EnviarCorreo(int usuarioId)
+    {
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Enviar Correo",
+                Text = "¿Deseas enviar los proyectos asignados a este usuario por correo?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true
+            });
+
+        if (resultado.IsConfirmed)
+        {
+            try
+            {
+                // Llamar al servicio de la API para enviar el correo
+                var response = await proyectoService.EnviarCorreo(usuarioId);
+
+                if (response.EsCorrecto)
+                {
+                    await Swal.FireAsync("Correo Enviado", response.Valor, SweetAlertIcon.Success);
+                }
+                else
+                {
+                    await Swal.FireAsync("Error", response.Mensaje, SweetAlertIcon.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                await Swal.FireAsync("Error", ex.Message, SweetAlertIcon.Error);
+            }
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {

@@ -296,5 +296,72 @@ namespace BlazorCrud.Server.Controllers
 
             return Ok(responseApi);
         }
+
+        [HttpGet]
+        [Route("EnviarProyectos/{usuarioId}")]
+        public async Task<IActionResult> EnviarProyectosPorUsuario(int usuarioId)
+        {
+            var responseApi = new ResponseAPI<string>();
+            var listaProyectoDTO = new List<ProyectoDTO>();
+
+            try
+            {
+                // Obtener los proyectos del usuario
+                foreach (var item in await _dbContext.Proyectos
+                    .Where(t => t.GerenteId == usuarioId)
+                    .Include(u => u.Gerente)
+                    .ToListAsync())
+                {
+                    listaProyectoDTO.Add(new ProyectoDTO
+                    {
+                        ProyectoId = item.ProyectoId,
+                        Nombre = item.Nombre,
+                        Descripcion = item.Descripcion,
+                        FechaInicio = item.FechaInicio,
+                        FechaFin = item.FechaFin,
+                        Prioridad = item.Prioridad,
+                        Estado = item.Estado,
+                        GerenteId = item.GerenteId,
+                        PorcentajeCompleto = item.PorcentajeCompleto,
+                        Gerente = new UsuarioDTO
+                        {
+                            UsuarioId = item.Gerente!.UsuarioId,
+                            Nombre = item.Gerente.Nombre,
+                            Email = item.Gerente.Email
+                        }
+                    });
+                }
+
+                // Construir el cuerpo del correo
+                var gerente = listaProyectoDTO.FirstOrDefault()?.Gerente;
+                if (gerente == null)
+                    throw new Exception("No se encontró información del gerente");
+
+                var cuerpo = "<h1>Proyectos Asignados</h1><ul>";
+                foreach (var proyecto in listaProyectoDTO)
+                {
+                    cuerpo += $"<li><b>{proyecto.Nombre}</b>: {proyecto.Descripcion} (Estado: {proyecto.Estado})</li>";
+                }
+                cuerpo += "</ul>";
+
+                // Enviar el correo
+                var emailService = HttpContext.RequestServices.GetService<EmailNotiService>();
+                await emailService!.EnviarCorreoAsync(
+                    destinatario: gerente.Email,
+                    asunto: "Proyectos Asignados",
+                    cuerpo: cuerpo
+                );
+
+                responseApi.EsCorrecto = true;
+                responseApi.Valor = "Correo enviado exitosamente.";
+            }
+            catch (Exception ex)
+            {
+                responseApi.EsCorrecto = false;
+                responseApi.Mensaje = ex.Message;
+            }
+
+            return Ok(responseApi);
+        }
     }
 }

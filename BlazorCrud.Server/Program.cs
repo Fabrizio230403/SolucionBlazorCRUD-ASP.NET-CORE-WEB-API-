@@ -20,8 +20,14 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<SistemaConsultoriaContext>(opciones =>
 {
     opciones.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQL"));
-}
-);
+});
+
+builder.Services.AddSingleton(new EmailNotiService(
+    smtpServer: "smtp.gmail.com",
+    smtpPort: 587,
+    smtpUser: "estefano.jurado.c52@gmail.com",
+    smtpPassword: "nsmu wleg wogy hyip"
+));
 
 builder.Services.AddScoped<Utilidades>();
 builder.Services.AddScoped<EmailService>(); // Corrección aquí

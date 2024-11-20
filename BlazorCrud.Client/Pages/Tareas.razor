@@ -8,23 +8,45 @@
 @using BlazorCrud.Client.Extensiones;
 @using Microsoft.AspNetCore.Components.Authorization
 @using System.Security.Claims;
+@inject IJSRuntime JSRuntime
 
+@inject HttpClient httpClient
 @inject SweetAlertService Swal;
 @inject AuthenticationStateProvider autenticacionProvider
 @inject ITareaService tareaService;
+@inject NavigationManager navManager
 @inject IRolPermisoService RolPermisoService;
 
 
 <h3>Tareas</h3>
 
-@if (permisos_usuario != null && permisos_usuario.Contains("Crear Tarea"))
-{
-    <a class="btn btn-success btn-sm mb-3" href="tarea">Nueva Tarea</a>
-}
-else
-{
-    <a class="btn btn-success btn-sm mb-3 disabled">Nueva Tarea</a>
-}
+ 
+
+ 
+<div class="d-flex justify-content-start mb-3">
+    @if (permisos_usuario != null && permisos_usuario.Contains("Crear Tarea"))
+    {
+        <a class="btn btn-success btn-sm" href="tarea">Nueva Tarea</a>
+    }
+    else
+    {
+        <a class="btn btn-success btn-sm disabled">Nueva Tarea</a>
+    }
+
+    @if (permisos_usuario != null && permisos_usuario.Contains("Generar Reporte Excel"))
+    {
+        <button @onclick="DescargarReporteExcel" class="btn btn-success btn-sm ms-3">
+            <i class="fas fa-file-excel"></i> Generar Excel
+        </button>
+    }
+
+    @if (permisos_usuario != null && permisos_usuario.Contains("Generar Reporte PDF"))
+    {
+        <button @onclick="DescargarReportePDF" class="btn btn-danger btn-sm ms-3">
+            <i class="fas fa-file-pdf"></i> Generar PDF
+        </button>
+    }
+</div>
 
 @if (permisos_usuario != null && permisos_usuario.Contains("Leer Tarea"))
 {
@@ -86,6 +108,8 @@ else
             }
         </tbody>
     </table>
+
+   
 }
 else
 {
@@ -145,4 +169,59 @@ else
             _ => "Desconocido"
         };
     }
+
+   
+
+    private async Task DescargarReporteExcel()
+    {
+        try
+        {
+            var archivoExcel = await tareaService.GenerarReporteExcel();
+            var fileName = "ReporteTareas.xlsx";
+
+            var byteArrayContent = new ByteArrayContent(archivoExcel);
+            byteArrayContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            var fileUrl = $"data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{Convert.ToBase64String(archivoExcel)}";
+            navManager.NavigateTo(fileUrl, true);
+        }
+        catch (Exception ex)
+        {
+            // Manejo de error
+            Console.Error.WriteLine($"Error al generar el reporte Excel: {ex.Message}");
+        }
+    }
+
+    private async Task DescargarReportePDF()
+    {
+        try
+        {
+            // Llamamos al servicio para obtener el archivo PDF
+            var archivoPDF = await tareaService.GenerarReportePDF();
+
+            // Establecemos el nombre del archivo
+            var fileName = "ReporteTareas.pdf";
+
+            // Creamos la URL base64 para la descarga del archivo
+            var fileUrl = $"data:application/pdf;base64,{Convert.ToBase64String(archivoPDF)}";
+
+            // Llamamos al método JavaScript para iniciar la descarga
+            await JSRuntime.InvokeVoidAsync("downloadFile", fileUrl, fileName);
+        }
+        catch (Exception ex)
+        {
+            // Manejo de errores
+            Console.Error.WriteLine($"Error al generar el reporte PDF: {ex.Message}");
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Asegúrate de que el archivo JS esté cargado
+            await JSRuntime.InvokeVoidAsync("eval", "console.log('JavaScript cargado correctamente')");
+        }
+    }
 }
+ 
+ 

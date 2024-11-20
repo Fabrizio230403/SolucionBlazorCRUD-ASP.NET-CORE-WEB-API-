@@ -1,4 +1,5 @@
 ﻿using BlazorCrud.Shared;
+using System.Net.Http;
 using System.Net.Http.Json;
 
 namespace BlazorCrud.Client.Services
@@ -77,5 +78,10 @@ namespace BlazorCrud.Client.Services
                 throw new Exception(result.Mensaje);
         }
 
+        public async Task<ResponseAPI<string>> EnviarCorreo(int usuarioId)
+        {
+            var response = await _http.GetFromJsonAsync<ResponseAPI<string>>($"api/Proyecto/EnviarProyectos/{usuarioId}");
+            return response!;
+        }
     }
 }
