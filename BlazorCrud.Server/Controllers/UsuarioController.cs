@@ -15,54 +15,12 @@ namespace BlazorCrud.Server.Controllers
         private readonly SistemaConsultoriaContext _context;
         private readonly Utilidades _utilidades;
 
-        // Inyección del contexto de base de datos y utilidades para encriptación y generación de JWT
+        // Inyección del contexto de base de datos y utilidades para encriptación
         public UsuarioController(SistemaConsultoriaContext context, Utilidades utilidades)
         {
             _context = context;
             _utilidades = utilidades;
         }
-
-
-
-        /*[HttpPost]
-        [Route("Login")]
-        public async Task<IActionResult> Login([FromBody] LoginDTO login)
-        {
-            // Busca en la base de datos el usuario que coincide con el correo y la clave (PasswordHash)
-            var usuario = await _context.Usuarios
-                .Where(u => u.Email == login.Correo && u.PasswordHash == login.Clave)
-                .Select(u => new UsuarioDTO
-                {
-                    UsuarioId = u.UsuarioId,
-                    Nombre = u.Nombre,
-                    Email = u.Email,
-                    RolId = u.RolId,
-                    FechaCreacion = u.FechaCreacion,
-                    Rol = new RolDTO
-                    {
-                        RolId = u.Rol.RolId,
-                        Nombre = u.Rol.Nombre
-                    }
-                })
-                .FirstOrDefaultAsync();
-
-            if (usuario == null)
-            {
-                // Retorna un código 401 si las credenciales son incorrectas
-                return StatusCode(StatusCodes.Status401Unauthorized, "Usuario o clave incorrectos");
-            }
-
-            // Crear el DTO de sesión usando los datos del usuario encontrado
-            SesionDTO sesionDTO = new SesionDTO
-            {
-                Nombre = usuario.Nombre,
-                Correo = usuario.Email,
-                Rol = usuario.Rol?.Nombre ?? "Sin Rol"
-            };
-
-            // Retorna la sesión con el código de éxito
-            return StatusCode(StatusCodes.Status200OK, sesionDTO);
-        }*/
 
 
         [HttpPost]
@@ -78,7 +36,7 @@ namespace BlazorCrud.Server.Controllers
             // Hashea la contraseña antes de guardarla
             var passwordHash = _utilidades.HashPassword(registro.Clave);
 
-            int rolConsultorId = 3; // O reemplázalo con el valor adecuado si tu rol "Consultor" tiene otro ID en la base de datos.
+            int rolConsultorId = 3; // 1 = Administrador - 2 = Gerente de Proyecto - 3 = Consultor
 
 
             var usuario = new Usuario
@@ -86,7 +44,7 @@ namespace BlazorCrud.Server.Controllers
                 Nombre = registro.Nombre,
                 Email = registro.Correo,
                 PasswordHash = passwordHash,
-                RolId = rolConsultorId,  // Asignamos el rol "Consultor"
+                RolId = rolConsultorId,  
                 FechaCreacion = DateTime.Now
             };
 

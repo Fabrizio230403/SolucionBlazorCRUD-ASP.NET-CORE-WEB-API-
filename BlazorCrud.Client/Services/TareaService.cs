@@ -65,6 +65,15 @@ namespace BlazorCrud.Client.Services
                 throw new Exception(response.Mensaje);
         }
 
+        public async Task<List<TareaDTO>> ObtenerTareasPorUsuario(int usuarioId)
+        {
+            var result = await _http.GetFromJsonAsync<ResponseAPI<List<TareaDTO>>>($"api/Tarea/Lista/{usuarioId}");
+
+            if (result!.EsCorrecto)
+                return result.Valor!;
+            else
+                throw new Exception(result.Mensaje);
+        }
 
     }
 }

@@ -254,5 +254,70 @@ namespace BlazorCrud.Server.Controllers
 
             return Ok(responseApi);
         }
+
+
+        [HttpGet]
+        [Route("Lista/{usuarioId}")]
+        public async Task<IActionResult> ListaPorUsuario(int usuarioId)
+        {
+            var responseApi = new ResponseAPI<List<TareaDTO>>();
+            var listaTareaDTO = new List<TareaDTO>();
+
+            try
+            {
+                // Filtrar tareas por UsuarioAsignadoId
+                foreach (var item in await _dbContext.Tareas
+                    .Where(t => t.UsuarioAsignadoId == usuarioId) // Filtrar tareas por el usuario
+                    .Include(p => p.Proyecto)
+                    .Include(u => u.UsuarioAsignado)
+                    .ToListAsync())
+                {
+                    listaTareaDTO.Add(new TareaDTO
+                    {
+                        TareaId = item.TareaId,
+                        ProyectoId = item.ProyectoId,
+                        Nombre = item.Nombre,
+                        Descripcion = item.Descripcion,
+                        FechaInicio = item.FechaInicio,
+                        FechaFin = item.FechaFin,
+                        Estado = item.Estado,
+                        UsuarioAsignadoId = item.UsuarioAsignadoId,
+                        Proyecto = new ProyectoDTO
+                        {
+                            ProyectoId = item.Proyecto!.ProyectoId,
+                            Nombre = item.Proyecto.Nombre,
+                            Descripcion = item.Proyecto.Descripcion,
+                            FechaInicio = item.Proyecto.FechaInicio,
+                            FechaFin = item.Proyecto.FechaFin,
+                            Prioridad = item.Proyecto.Prioridad,
+                            Estado = item.Proyecto.Estado,
+                            GerenteId = item.Proyecto.GerenteId,
+                            PorcentajeCompleto = item.Proyecto.PorcentajeCompleto,
+                        },
+                        Usuario = new UsuarioDTO
+                        {
+                            UsuarioId = item.UsuarioAsignado!.UsuarioId,
+                            Nombre = item.UsuarioAsignado.Nombre,
+                            Email = item.UsuarioAsignado.Email,
+                            PasswordHash = item.UsuarioAsignado.PasswordHash,
+                            RolId = item.UsuarioAsignado.RolId,
+                            FechaCreacion = item.UsuarioAsignado.FechaCreacion,
+                        }
+                    });
+                }
+
+                responseApi.EsCorrecto = true;
+                responseApi.Valor = listaTareaDTO;
+            }
+            catch (Exception ex)
+            {
+                responseApi.EsCorrecto = false;
+                responseApi.Mensaje = ex.Message;
+            }
+
+            return Ok(responseApi);
+        }
+
+
     }
 }

@@ -24,12 +24,13 @@ namespace BlazorCrud.Client.Extensiones
             if (sesionUsuario != null)
             {
                 claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
-        {
-            new Claim(ClaimTypes.Name, sesionUsuario.Nombre),
-            new Claim(ClaimTypes.Email, sesionUsuario.Correo),
-            new Claim(ClaimTypes.Role, sesionUsuario.Rol),
-            new Claim("token", sesionUsuario.Token) // Almacena el token JWT
-        }, "JwtAuth"));
+                    {
+                        new Claim(ClaimTypes.NameIdentifier, sesionUsuario.UsuarioId.ToString()),
+                        new Claim(ClaimTypes.Name, sesionUsuario.Nombre),
+                        new Claim(ClaimTypes.Email, sesionUsuario.Correo),
+                        new Claim(ClaimTypes.Role, sesionUsuario.Rol),
+                        new Claim("token", sesionUsuario.Token) // Almacena el token JWT
+                    }, "JwtAuth"));
 
                 await _sessionStorage.GuardarStorage("sesionUsuario", sesionUsuario);
             }
@@ -51,6 +52,8 @@ namespace BlazorCrud.Client.Extensiones
 
             var claimPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
                 {
+                    
+                    new Claim(ClaimTypes.NameIdentifier, sesionUsuario.UsuarioId.ToString()),
                     new Claim(ClaimTypes.Name, sesionUsuario.Nombre),
                     new Claim(ClaimTypes.Email, sesionUsuario.Correo),
                     new Claim(ClaimTypes.Role, sesionUsuario.Rol),

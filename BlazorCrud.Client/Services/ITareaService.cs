@@ -9,5 +9,7 @@ namespace BlazorCrud.Client.Services
         Task<int> Guardar(TareaDTO tarea);
         Task<int> Editar(TareaDTO tarea);
         Task<bool> Eliminar(int id);
+
+        Task<List<TareaDTO>> ObtenerTareasPorUsuario(int usuarioId);
     }
 }

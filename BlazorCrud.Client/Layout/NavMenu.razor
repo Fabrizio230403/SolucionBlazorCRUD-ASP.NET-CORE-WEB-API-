@@ -19,7 +19,7 @@
     <Authorized>
         <!-- Bloque con la imagen del usuario, nombre y rol, centrado -->
         <div class="navbar-user-info ms-3 d-flex flex-column align-items-center" style="margin-right:20px;">
-            <!-- Foto del usuario dependiendo de su rol -->
+             
             @if (@context.User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value == "Administrador")
             {
                 <img src="images/admin.png" alt="Foto de Perfil Admin" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;" />
@@ -37,21 +37,18 @@
                 <img src="images/default.png" alt="Foto de Perfil" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;" />
             }
 
-            <!-- Nombre del usuario con mayor tamaño -->
+            
             <span class="d-block mt-2" style="font-size: 1.4rem; font-weight: bold; color:white; position:center;">@context.User.Identity!.Name</span>
 
-            <!-- Rol del usuario debajo del nombre -->
+            
             <span class="d-block text-muted" style="font-size: 1.2rem; position:center;">@context.User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</span>
 
-            <!-- Línea de separación -->
+            
             <hr class="w-50 mt-3" />
 
-            <!-- Menú desplegable con opciones -->
-            <ul class="dropdown-menu" aria-labelledby="usuarioMenu">
-                <!-- Opción de Configuración con ícono -->
-                <li><a class="dropdown-item" href="/configuracion"><i class="fas fa-cogs me-2"></i>Configuración</a></li>
-
-                <!-- Opción de Cerrar Sesión con ícono -->
+             
+            <ul class="dropdown-menu" aria-labelledby="usuarioMenu">                
+                <li><a class="dropdown-item" href="/configuracion"><i class="fas fa-cogs me-2"></i>Configuración</a></li>            
                 <li><a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión</a></li>
             </ul>
         </div>

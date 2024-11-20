@@ -8,7 +8,7 @@
 
 <style>
     body {
-        background-image: url('/images/consultorias.jpg'); /* Imagen de fondo */
+        background-image: url('/images/consultorias.jpg'); 
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
@@ -16,7 +16,7 @@
     }
 
     .reset-container {
-        background-color: rgba(255, 255, 255, 0.8); /* Fondo translúcido */
+        background-color: rgba(255, 255, 255, 0.8); 
         padding: 40px;
         border-radius: 10px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -70,14 +70,24 @@
             </div>
 
             <!-- Formulario de restablecimiento de contraseña -->
-            <div class="mb-3">
+            <div class="mb-3 position-relative">
                 <label for="nuevaClave" class="form-label">Nueva Contraseña</label>
-                <input @bind="nuevaClave" type="password" id="nuevaClave" class="form-control" placeholder="Ingresa nueva contraseña" required />
+                <div class="input-group">
+                    <input @bind="nuevaClave" type="@passwordInputType" id="nuevaClave" class="form-control" placeholder="Ingresa nueva contraseña" required />
+                    <span class="input-group-text bg-white border-0" style="cursor: pointer;" @onclick="TogglePasswordVisibility">
+                        <i class="@passwordIcon"></i>
+                    </span>
+                </div>
             </div>
 
-            <div class="mb-3">
+            <div class="mb-3 position-relative">
                 <label for="confirmarClave" class="form-label">Confirmar Contraseña</label>
-                <input @bind="confirmarClave" type="password" id="confirmarClave" class="form-control" placeholder="Confirma tu nueva contraseña" required />
+                <div class="input-group">
+                    <input @bind="confirmarClave" type="@confirmPasswordInputType" id="confirmarClave" class="form-control" placeholder="Confirma tu nueva contraseña" required />
+                    <span class="input-group-text bg-white border-0" style="cursor: pointer;" @onclick="ToggleConfirmPasswordVisibility">
+                        <i class="@confirmPasswordIcon"></i>
+                    </span>
+                </div>
             </div>
 
             <div class="d-grid gap-2">
@@ -91,6 +101,43 @@
     private string? nuevaClave;
     private string? confirmarClave;
     private string? token;
+
+
+    private string passwordInputType = "password";
+    private string passwordIcon = "fas fa-eye-slash";
+
+    private string confirmPasswordInputType = "password";
+    private string confirmPasswordIcon = "fas fa-eye-slash";
+
+    private void TogglePasswordVisibility()
+    {
+
+        if (passwordInputType == "password")
+        {
+            passwordInputType = "text";
+            passwordIcon = "fas fa-eye";
+        }
+        else
+        {
+            passwordInputType = "password";
+            passwordIcon = "fas fa-eye-slash";
+        }
+    }
+
+    private void ToggleConfirmPasswordVisibility()
+    {
+
+        if (confirmPasswordInputType == "password")
+        {
+            confirmPasswordInputType = "text";
+            confirmPasswordIcon = "fas fa-eye";
+        }
+        else
+        {
+            confirmPasswordInputType = "password";
+            confirmPasswordIcon = "fas fa-eye-slash";
+        }
+    }
 
     protected override void OnInitialized()
     {

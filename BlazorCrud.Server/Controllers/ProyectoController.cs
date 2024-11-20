@@ -18,18 +18,7 @@ namespace BlazorCrud.Server.Controllers
             _dbContext = dbContext;
         }
 
-
-
-        /*[HttpGet]
-        [Route("ListaProyectos")]
-        public async Task<IActionResult> ListaProyectos()
-        {
-            var lista = await _dbContext.Proyectos.ToListAsync();
-            return StatusCode(StatusCodes.Status200OK, new { value = lista});
-        
-        }*/
-
-            [HttpGet]
+        [HttpGet]
         [Route("Lista")]
         public async Task<IActionResult> Lista()
         {
@@ -257,6 +246,55 @@ namespace BlazorCrud.Server.Controllers
             return Ok(responseApi);
         }
 
-         
+
+        [HttpGet]
+        [Route("Lista/{usuarioId}")]
+        public async Task<IActionResult> ListaPorUsuario(int usuarioId)
+        {
+            var responseApi = new ResponseAPI<List<ProyectoDTO>>();
+            var listaProyectoDTO = new List<ProyectoDTO>();
+
+            try
+            {
+                 
+                foreach (var item in await _dbContext.Proyectos
+                    .Where(t => t.GerenteId == usuarioId) // Filtrar proyectos por el usuario
+                    .Include(u => u.Gerente)
+                    .ToListAsync())
+                {
+                    listaProyectoDTO.Add(new ProyectoDTO
+                    {
+                        ProyectoId = item.ProyectoId,
+                        Nombre = item.Nombre,
+                        Descripcion = item.Descripcion,
+                        FechaInicio = item.FechaInicio,
+                        FechaFin = item.FechaFin,
+                        Prioridad = item.Prioridad,
+                        Estado = item.Estado,
+                        GerenteId = item.GerenteId,
+                        PorcentajeCompleto = item.PorcentajeCompleto,
+                        Gerente = new UsuarioDTO
+                        {
+                            UsuarioId = item.Gerente!.UsuarioId,
+                            Nombre = item.Gerente.Nombre,
+                            Email = item.Gerente.Email,
+                            PasswordHash = item.Gerente.PasswordHash,
+                            RolId = item.Gerente.RolId,
+                            FechaCreacion = item.Gerente.FechaCreacion
+                        }
+                    });
+                }
+
+                responseApi.EsCorrecto = true;
+                responseApi.Valor = listaProyectoDTO;
+            }
+            catch (Exception ex)
+            {
+                responseApi.EsCorrecto = false;
+                responseApi.Mensaje = ex.Message;
+            }
+
+            return Ok(responseApi);
+        }
     }
 }

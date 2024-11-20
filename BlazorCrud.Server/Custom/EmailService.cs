@@ -5,7 +5,7 @@ public class EmailService
 {
     private readonly string smtpServer = "smtp.gmail.com";
     private readonly int smtpPort = 587;
-    private readonly string smtpUser = "estefano.jurado.c52@gmail.com"; // Tu correo Gmail
+    private readonly string smtpUser = "estefano.jurado.c52@gmail.com"; // Correo Gmail
     private readonly string smtpPassword = "nsmu wleg wogy hyip"; // Contraseña de aplicación
 
     public async Task EnviarCorreoRecuperacionAsync(string destinatario, string enlace)

@@ -70,12 +70,12 @@
         text-decoration: underline;
      }
 
-    /* Estilos para los botones de login con Google, Facebook y GitHub */
+     
     .social-login-btns {
         display: flex;
-        justify-content: center; /* Centra los botones */
+        justify-content: center;  
         margin-top: 20px;
-        gap: 30px; /* Espacio intermedio entre los botones */
+        gap: 30px;  
     }
 
     .social-btn {
@@ -90,25 +90,25 @@
         transition: transform 0.3s;
     }
 
-        /* Efecto de hover */
+        
         .social-btn:hover {
             transform: scale(1.1);
         }
 
-    /* Colores específicos para cada plataforma */
+    
     .google-btn {
-        background-color: #db4437; /* Rojo de Google */
+        background-color: #db4437; 
     }
 
     .facebook-btn {
-        background-color: #3b5998; /* Azul de Facebook */
+        background-color: #3b5998; 
     }
 
     .github-btn {
-        background-color: #333; /* Negro de GitHub */
+        background-color: #333;  
     }
 
-    /* Aseguramos que los íconos sean blancos para destacar sobre los botones */
+ 
     .social-btn i {
         color: white;
     }
@@ -128,12 +128,19 @@
                 <input @bind="login.Correo" type="email" id="correo" class="form-control" placeholder="Ingresa tu correo" required />
             </div>
 
-            <div class="mb-3">
+            <div class="mb-3 position-relative">
                 <label for="clave" class="form-label">Contraseña</label>
-                <input @bind="login.Clave" type="password" id="clave" class="form-control" placeholder="Ingresa tu contraseña" required />
+                <div class="input-group">
+                    <input @bind="login.Clave" type="@passwordInputType" id="clave" class="form-control" placeholder="Ingresa tu contraseña" required />
+                    <span class="input-group-text bg-white border-0" style="cursor: pointer;" @onclick="TogglePasswordVisibility">
+                        <i class="@passwordIcon"></i>
+                    </span>
+                </div>
             </div>
 
-            <!-- Enlace de recuperar contraseña -->
+           
+
+           
             <div class="mb-3 forgot-password text-end">
                 <span>¿Has olvidado tu contraseña? </span>
                 <a href="/recuperar-contraseña">Restablecer aquí.</a>
@@ -143,25 +150,25 @@
                 <button @onclick="IniciarSesion" class="btn btn-primary">Iniciar sesión</button>
             </div>
 
-            <!-- Enlace para redirigir a la página de registro -->
+            
             <div class="text-center mt-3">
                 <p class="mb-0">¿No tienes una cuenta? <a href="/registro" class="link-primary">Regístrate aquí</a></p>
             </div>
 
 
-            <!-- Botones de login con Google, Facebook, GitHub -->
+         
             <div class="social-login-btns">
                 <!-- Google -->
                 <button href="javascript:void(0)" class="social-btn google-btn">
-                    <i class="fab fa-google text-white"></i> <!-- Google Icon -->
+                    <i class="fab fa-google text-white"></i>  
                 </button>
                 <!-- Facebook -->
                 <button href="javascript:void(0)" class="social-btn facebook-btn">
-                    <i class="fab fa-facebook-f text-white"></i> <!-- Facebook Icon -->
+                    <i class="fab fa-facebook-f text-white"></i>  
                 </button>
                 <!-- GitHub -->
                 <button href="javascript:void(0)" class="social-btn github-btn">
-                    <i class="fab fa-github text-white"></i> <!-- GitHub Icon -->
+                    <i class="fab fa-github text-white"></i>  
                 </button>
             </div>
         </div>
@@ -172,6 +179,24 @@
 
 @code {
     private LoginDTO login = new LoginDTO();
+
+    private string passwordInputType = "password";  
+    private string passwordIcon = "fas fa-eye-slash";  
+
+    private void TogglePasswordVisibility()
+    {
+         
+        if (passwordInputType == "password")
+        {
+            passwordInputType = "text";
+            passwordIcon = "fas fa-eye"; 
+        }
+        else
+        {
+            passwordInputType = "password";
+            passwordIcon = "fas fa-eye-slash";  
+        }
+    }
 
     private async Task IniciarSesion()
     {
@@ -185,6 +210,7 @@
             {
                 var sesionUsuario = new SesionDTO
                     {
+                        UsuarioId = responseContent.Usuario.UsuarioId,
                         Nombre = responseContent.Usuario.Nombre,
                         Correo = responseContent.Usuario.Email,
                         Rol = responseContent.Usuario.Rol!.Nombre,
@@ -195,10 +221,10 @@
                 var autenticacionExt = (AutenticacionExtension)autenticacionProvider;
                 await autenticacionExt.ActualizarEstadoAutenticacion(sesionUsuario);
 
-                // Muestra un mensaje de bienvenida
+                 
                 await Swal.FireAsync("Bienvenido", $"¡Hola {sesionUsuario.Nombre}! Has iniciado sesión correctamente.", SweetAlertIcon.Success);
 
-                // Redirige al home o a la página principal
+                 
                 navManager.NavigateTo("/Home");
             }
         }

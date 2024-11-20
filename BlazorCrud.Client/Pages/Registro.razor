@@ -99,17 +99,27 @@
                 <input @bind="registro.Correo" type="email" class="form-control" id="correo" placeholder="Ingresa tu correo" required />
             </div>
 
-            <div class="mb-3">
+            <div class="mb-3 position-relative">
                 <label for="clave" class="form-label">Contraseña</label>
-                <input @bind="registro.Clave" type="password" class="form-control" id="clave" placeholder="Ingresa tu contraseña" required />
-                <small class="form-text text-muted">La contraseña debe tener al menos 8 caracteres.</small>
+                <div class="input-group">
+                    <input @bind="registro.Clave" type="@passwordInputType" class="form-control" id="clave" placeholder="Ingresa tu contraseña" required />
+                    <span class="input-group-text bg-white border-0" style="cursor: pointer;" @onclick="TogglePasswordVisibility">
+                        <i class="@passwordIcon"></i>
+                    </span>
+                    <small class="form-text text-muted">La contraseña debe tener al menos 8 caracteres.</small>
+                </div>
             </div>
 
-            <div class="mb-3">
+            <div class="mb-3 position-relative">
                 <label for="confirmarClave" class="form-label">Confirmar Contraseña</label>
-                <input @bind="registro.ConfirmarClave" type="password" class="form-control" id="confirmarClave" placeholder="Confirma tu contraseña" required />
+                <div class="input-group">
+                    <input @bind="registro.ConfirmarClave" type="@confirmPasswordInputType" class="form-control" id="confirmarClave" placeholder="Confirma tu contraseña" required />
+                    <span class="input-group-text bg-white border-0" style="cursor: pointer;" @onclick="ToggleConfirmPasswordVisibility">
+                        <i class="@confirmPasswordIcon"></i>
+                    </span>
+                </div>
             </div>
-
+            
             <div class="d-grid gap-2">
                 <button @onclick="RegistrarUsuario" class="btn btn-success">Registrar</button>
             </div>
@@ -125,17 +135,53 @@
 @code {
     private RegistroDTO registro = new RegistroDTO();
 
+    private string passwordInputType = "password";  
+    private string passwordIcon = "fas fa-eye-slash"; 
+
+    private string confirmPasswordInputType = "password"; 
+    private string confirmPasswordIcon = "fas fa-eye-slash";
+
+    private void TogglePasswordVisibility()
+    {
+         
+        if (passwordInputType == "password")
+        {
+            passwordInputType = "text";
+            passwordIcon = "fas fa-eye"; 
+        }
+        else
+        {
+            passwordInputType = "password";
+            passwordIcon = "fas fa-eye-slash"; 
+        }
+    }
+
+    private void ToggleConfirmPasswordVisibility()
+    {
+        
+        if (confirmPasswordInputType == "password")
+        {
+            confirmPasswordInputType = "text";
+            confirmPasswordIcon = "fas fa-eye";
+        }
+        else
+        {
+            confirmPasswordInputType = "password";
+            confirmPasswordIcon = "fas fa-eye-slash";
+        }
+    }
+
     private async Task RegistrarUsuario()
     {
-        // Verificar que las contraseñas coinciden
+         
         if (registro.Clave != registro.ConfirmarClave)
         {
-            // Manejo de error si las contraseñas no coinciden
+            
             await Swal.FireAsync("Error", "Las contraseñas no coinciden. Por favor, verifícalas.", SweetAlertIcon.Error);
-            return; // Detiene la ejecución si las contraseñas no coinciden
+            return;  
         }
 
-        // Enviar solicitud de registro
+        
         var response = await httpClient.PostAsJsonAsync("/api/Usuario/Registrar", registro);
 
         if (response.IsSuccessStatusCode)
@@ -146,16 +192,16 @@
         }
         else
         {
-            // Manejo de error si ocurre algún problema durante el registro
+             
             var errorMessage = "Hubo un problema durante el registro. Intenta nuevamente.";
 
-            // Aquí puedes agregar más detalles de la respuesta si es necesario
+            
             if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
             {
                 errorMessage = "El correo electrónico ya está registrado. Por favor, usa otro.";
             }
 
-            // Mostrar mensaje de error con SweetAlert
+        
             await Swal.FireAsync("Error", errorMessage, SweetAlertIcon.Error);
         }
     }

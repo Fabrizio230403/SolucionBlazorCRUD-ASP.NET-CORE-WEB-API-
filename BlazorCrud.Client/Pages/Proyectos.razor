@@ -1,95 +1,141 @@
-﻿@page "/proyectos"
+﻿ @page "/proyectos"
 
 @using Microsoft.AspNetCore.Authorization;
-@attribute [Authorize(Roles = "Administrador, Gerente de Proyecto")]
+@attribute [Authorize(Roles = "Administrador,Gerente de Proyecto,Consultor")]
 
 @using BlazorCrud.Shared;
 @using CurrieTechnologies.Razor.SweetAlert2;
 @using BlazorCrud.Client.Services;
+@using BlazorCrud.Client.Extensiones;
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims;
 
 @inject SweetAlertService Swal;
+@inject AuthenticationStateProvider autenticacionProvider
 @inject IProyectoService proyectoService;
+@inject IRolPermisoService RolPermisoService;
 
 <h3>Proyectos</h3>
 
-<a class="btn btn-success btn-sm mb-3" href="proyecto">Nuevo Proyecto</a>
+@if (permisos_usuario != null && permisos_usuario.Contains("Crear Proyecto"))
+{
+    <a class="btn btn-success btn-sm mb-3" href="proyecto">Nuevo Proyecto</a>
+}
+else
+{
+    <a class="btn btn-secondary btn-sm mb-3 disabled">Nuevo Proyecto</a>
+}
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Nombre</th>
-            <th>Descripción</th>
-            <th>Fecha Inicio</th>
-            <th>Fecha Fin</th>
-            <th>Prioridad</th>
-            <th>Estado</th>
-            <th>Usuario</th>
-            <th>Porcentaje(%)</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-
-        @if (listaProyecto == null)
-        {
+@if (permisos_usuario != null && permisos_usuario.Contains("Leer Proyecto"))
+{
+    <table class="table">
+        <thead>
             <tr>
-                <td colspan="11" align="center">
-                    <img style="width:50px" src="https://media.tenor.com/On7kvXhzmI4AAAAj/loading-gif.gif" />
-                </td>
+                <th>#</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Fecha Inicio</th>
+                <th>Fecha Fin</th>
+                <th>Prioridad</th>
+                <th>Estado</th>
+                <th>Usuario</th>
+                <th>Porcentaje(%)</th>
+                @if (permisos_usuario != null && (permisos_usuario.Contains("Editar Proyecto") || permisos_usuario.Contains("Eliminar Proyecto")))
+                {
+                    <th>Acciones</th>
+                }
             </tr>
-        }
-        else
-        {
-            @foreach (var item in listaProyecto)
+        </thead>
+        <tbody>
+
+            @if (listaProyecto == null)
             {
                 <tr>
-                    <td>@item.ProyectoId</td>
-                    <td>@item.Nombre</td>
-                    <td>@item.Descripcion</td>
-                    <td>@item.FechaInicio</td>
-                    <td>@item.FechaFin</td>
-                    <td>@ObtenerDescripcionPrioridad(item.Prioridad)</td>
-                    <td>@ObtenerDescripcionEstado(item.Estado)</td>
-                    <td>@item.Gerente!.Nombre</td>
-                    <td>
-                        <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
-                            <div class="progress" style="height: 20px; width: 100%;">
-                                <div class="progress-bar @(item.PorcentajeCompleto == 100 ? "bg-success" :
-            item.PorcentajeCompleto >= 50 ? "bg-info" : "bg-warning")"
-                                     role="progressbar"
-                                     style="width: @(ObtenerWidthPorcentaje(item.PorcentajeCompleto));"
-                                     aria-valuenow="@item.PorcentajeCompleto"
-                                     aria-valuemin="0"
-                                     aria-valuemax="100">
-                                </div>
-                            </div>
-                            <div style="font-size: 12px; margin-top: 5px; text-align: center;">
-                                @item.PorcentajeCompleto%
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <a class="btn btn-primary btn-sm" href="proyecto/@item.ProyectoId">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        <button type="button" class="btn btn-danger btn-sm" @onclick="(() => Eliminar(item.ProyectoId))">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
+                    <td colspan="11" align="center">
+                        <img style="width:50px" src="https://media.tenor.com/On7kvXhzmI4AAAAj/loading-gif.gif" />
                     </td>
                 </tr>
             }
-        }
-    </tbody>
-</table>
+            else
+            {
+                @foreach (var item in listaProyecto)
+                {
+                    <tr>
+                        <td>@item.ProyectoId</td>
+                        <td>@item.Nombre</td>
+                        <td>@item.Descripcion</td>
+                        <td>@item.FechaInicio</td>
+                        <td>@item.FechaFin</td>
+                        <td>@ObtenerDescripcionPrioridad(item.Prioridad)</td>
+                        <td>@ObtenerDescripcionEstado(item.Estado)</td>
+                        <td>@item.Gerente!.Nombre</td>
+                        <td>
+                            <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+                                <div class="progress" style="height: 20px; width: 100%;">
+                                    <div class="progress-bar @(item.PorcentajeCompleto == 100 ? "bg-success" :
+                                        item.PorcentajeCompleto >= 50 ? "bg-info" : "bg-warning")"
+                                         role="progressbar"
+                                         style="width: @(ObtenerWidthPorcentaje(item.PorcentajeCompleto));"
+                                         aria-valuenow="@item.PorcentajeCompleto"
+                                         aria-valuemin="0"
+                                         aria-valuemax="100">
+                                    </div>
+                                </div>
+                                <div style="font-size: 12px; margin-top: 5px; text-align: center;">
+                                    @item.PorcentajeCompleto%
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            @if (permisos_usuario != null && permisos_usuario.Contains("Editar Proyecto"))
+                            {
+                                <a class="btn btn-primary btn-sm" href="proyecto/@item.ProyectoId">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            }
+                            else
+                            {
+                                <a class="btn btn-primary btn-sm disabled">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            }
+                            <button type="button" class="btn btn-danger btn-sm" @onclick="(() => Eliminar(item.ProyectoId))"
+                                    disabled="@(permisos_usuario == null || !permisos_usuario.Contains("Eliminar Proyecto"))">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <h1>Usted no tiene permisos para visualisar los proyectos</h1>
+}
+
 
 @code {
     List<ProyectoDTO>? listaProyecto = null;
+    List<String>? permisos_usuario = null;
 
 
     protected override async Task OnInitializedAsync()
     {
         listaProyecto = await proyectoService.Lista();
+
+        // SESIÓN
+        var authState = await autenticacionProvider.GetAuthenticationStateAsync();
+        var usuario = authState.User;
+
+        if (usuario.Identity != null && usuario.Identity.IsAuthenticated)
+        {
+            var usuarioId = int.Parse(usuario.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            permisos_usuario = await RolPermisoService.ListaPermisos(usuarioId);
+        }
     }
 
     private async Task Eliminar(int id)

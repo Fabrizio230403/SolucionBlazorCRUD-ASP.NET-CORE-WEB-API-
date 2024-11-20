@@ -23,6 +23,10 @@ public partial class SistemaConsultoriaContext : DbContext
 
     public virtual DbSet<Role> Roles { get; set; }
 
+    public virtual DbSet<RolesPermiso> Roles_Permisos { get; set; }
+
+    public virtual DbSet<Permiso> Permiso { get; set; }
+
     public virtual DbSet<Tarea> Tareas { get; set; }
 
     public virtual DbSet<Usuario> Usuarios { get; set; }
@@ -157,6 +161,35 @@ public partial class SistemaConsultoriaContext : DbContext
             entity.HasOne(d => d.Rol).WithMany(p => p.Usuarios)
                 .HasForeignKey(d => d.RolId)
                 .HasConstraintName("FK__Usuarios__RolID__60A75C0F");
+        });
+
+        modelBuilder.Entity<Permiso>(entity =>
+        {
+            entity.ToTable("Permisos");
+
+            entity.HasKey(e => e.PermisoId);
+            entity.Property(e => e.Nombre).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Descripcion).HasMaxLength(250);
+        });
+
+        modelBuilder.Entity<RolesPermiso>(entity =>
+        {
+            entity.HasKey(e => new { e.RolId, e.PermisoId }).HasName("PK_Roles_Permisos");
+
+            entity.Property(e => e.RolId).HasColumnName("RolID");
+            entity.Property(e => e.PermisoId).HasColumnName("PermisoID");
+
+            entity.HasOne(d => d.Rol)
+                .WithMany(p => p.RolPermisos)
+                .HasForeignKey(d => d.RolId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Roles_Permisos_Rol");
+
+            entity.HasOne(d => d.Permiso)
+                .WithMany(p => p.RolPermisos)
+                .HasForeignKey(d => d.PermisoId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Roles_Permisos_Permiso");
         });
 
         OnModelCreatingPartial(modelBuilder);

@@ -66,6 +66,16 @@ namespace BlazorCrud.Client.Services
             else
                 throw new Exception(response.Mensaje);
         }
-        
+
+        public async Task<List<ProyectoDTO>> ObtenerProyectosAsignadosPorUsuario(int usuarioId)
+        {
+            var result = await _http.GetFromJsonAsync<ResponseAPI<List<ProyectoDTO>>>($"api/Proyecto/Lista/{usuarioId}");
+
+            if (result!.EsCorrecto)
+                return result.Valor!;
+            else
+                throw new Exception(result.Mensaje);
+        }
+
     }
 }

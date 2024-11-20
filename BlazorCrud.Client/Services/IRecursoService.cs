@@ -9,5 +9,6 @@ namespace BlazorCrud.Client.Services
         Task<int> Guardar(RecursoDTO recurso);
         Task<int> Editar(RecursoDTO recurso);
         Task<bool> Eliminar(int id);
+        Task<List<RecursoDTO>> ObtenerRecursosPorUsuario(int usuarioId);
     }
 }

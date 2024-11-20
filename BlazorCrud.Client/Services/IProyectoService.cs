@@ -9,5 +9,6 @@ namespace BlazorCrud.Client.Services
         Task<int> Guardar(ProyectoDTO proyecto);
         Task<int> Editar(ProyectoDTO proyecto);
         Task<bool> Eliminar(int id);
+        Task<List<ProyectoDTO>> ObtenerProyectosAsignadosPorUsuario(int usuarioId);
     }
 }

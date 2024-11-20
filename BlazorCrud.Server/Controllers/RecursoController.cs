@@ -250,5 +250,66 @@ namespace BlazorCrud.Server.Controllers
 
             return Ok(responseApi);
         }
+
+        [HttpGet]
+        [Route("Lista/{usuarioId}")]
+        public async Task<IActionResult> ListaPorUsuario(int usuarioId)
+        {
+            var responseApi = new ResponseAPI<List<RecursoDTO>>();
+            var listaRecursoDTO = new List<RecursoDTO>();
+
+            try
+            {
+                // Filtrar recursos por UsuarioId
+                foreach (var item in await _dbContext.Recursos
+                    .Where(t => t.UsuarioId == usuarioId) // Filtrar recursos por el usuario
+                    .Include(p => p.Proyecto)
+                    .Include(u => u.Usuario)
+                    .ToListAsync())
+                {
+                    listaRecursoDTO.Add(new RecursoDTO
+                    {
+                        RecursoId = item.RecursoId,
+                        ProyectoId = item.ProyectoId,
+                        Tipo = item.Tipo,
+                        Nombre = item.Nombre,
+                        Costo = item.Costo,
+                        TiempoAsignado = item.TiempoAsignado,
+                        UsuarioId = item.UsuarioId,
+                        Proyecto = new ProyectoDTO
+                        {
+                            ProyectoId = item.Proyecto!.ProyectoId,
+                            Nombre = item.Proyecto.Nombre,
+                            Descripcion = item.Proyecto.Descripcion,
+                            FechaInicio = item.Proyecto.FechaInicio,
+                            FechaFin = item.Proyecto.FechaFin,
+                            Prioridad = item.Proyecto.Prioridad,
+                            Estado = item.Proyecto.Estado,
+                            GerenteId = item.Proyecto.GerenteId,
+                            PorcentajeCompleto = item.Proyecto.PorcentajeCompleto,
+                        },
+                        Usuario = new UsuarioDTO
+                        {
+                            UsuarioId = item.Usuario!.UsuarioId,
+                            Nombre = item.Usuario.Nombre,
+                            Email = item.Usuario.Email,
+                            PasswordHash = item.Usuario.PasswordHash,
+                            RolId = item.Usuario.RolId,
+                            FechaCreacion = item.Usuario.FechaCreacion
+                        }
+                    });
+                }
+
+                responseApi.EsCorrecto = true;
+                responseApi.Valor = listaRecursoDTO;
+            }
+            catch (Exception ex)
+            {
+                responseApi.EsCorrecto = false;
+                responseApi.Mensaje = ex.Message;
+            }
+
+            return Ok(responseApi);
+        }
     }
 }
